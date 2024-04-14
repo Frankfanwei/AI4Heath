@@ -1,14 +1,3 @@
-"""Module for prompt-injection neurons for the
-llm-defender-subnet.
-
-Long description
-
-Typical example usage:
-
-    foo = bar()
-    foo.bar()
-"""
-
 import copy
 import pickle
 import json
@@ -22,28 +11,21 @@ import torch
 import secrets
 import time
 import bittensor as bt
-from llm_defender.base.neuron import BaseNeuron
-from llm_defender.base.utils import (
+from ai4h.base.neuron import BaseNeuron
+from ai4h.base.utils import (
     timeout_decorator,
     validate_miner_blacklist,
     validate_numerical_value,
     validate_prompt,
     sign_data,
 )
-from llm_defender.base import mock_data
-from llm_defender.core.validators import penalty
+from ai4h.core.validators import penalty
 import requests
-import llm_defender.core.validators.scoring as scoring
-
-# Load wandb library only if it is enabled
-from llm_defender import __wandb__ as wandb
-
-if wandb is True:
-    from llm_defender.base.wandb_handler import WandbHandler
+import ai4h.core.validators.scoring as scoring
 
 import logging
 
-class PromptInjectionValidator(BaseNeuron):
+class EHRInjectionValidator(BaseNeuron):
     """Summary of the class
 
     Class description
@@ -71,12 +53,6 @@ class PromptInjectionValidator(BaseNeuron):
         self.load_validator_state = None
         self.prompt = None
 
-        # Enable wandb if it has been configured
-        if wandb is True:
-            self.wandb_enabled = True
-            self.wandb_handler = WandbHandler()
-        else:
-            self.wandb_enabled = False
 
     def apply_config(self, bt_classes) -> bool:
         """This method applies the configuration to specified bittensor classes"""
@@ -208,14 +184,6 @@ class PromptInjectionValidator(BaseNeuron):
 
         target = query["label"]
 
-        if self.wandb_enabled:
-            # Update wandb timestamp for the current run
-            self.wandb_handler.set_timestamp()
-
-            # Log target to wandb
-            self.wandb_handler.log(data={"Target": target})
-            bt.logging.trace(f"Adding wandb logs for target: {target}")
-
         bt.logging.debug(f"Confidence target set to: {target}")
 
         # Initiate the response objects
@@ -273,36 +241,6 @@ class PromptInjectionValidator(BaseNeuron):
                     "timestamp": response.output["timestamp"],
                 }
 
-                text_class = [
-                    data
-                    for data in response.output["engines"]
-                    if data["name"] == "engine:text_classification"
-                ]
-
-                vector_search = [
-                    data
-                    for data in response.output["engines"]
-                    if data["name"] == "engine:vector_search"
-                ]
-
-                yara = [
-                    data
-                    for data in response.output["engines"]
-                    if data["name"] == "engine:yara"
-                ]
-
-                engine_data = []
-
-                if text_class:
-                    if len(text_class) > 0:
-                        engine_data.append(text_class[0])
-                if vector_search:
-                    if len(vector_search) > 0:
-                        engine_data.append(vector_search[0])
-                if yara:
-                    if len(yara) > 0:
-                        engine_data.append(yara[0])
-
                 responses_valid_uids.append(processed_uids[i])
 
                 if response.output["subnet_version"]:
@@ -313,7 +251,7 @@ class PromptInjectionValidator(BaseNeuron):
 
                 # Populate response data
                 response_object["response"] = miner_response
-                response_object["engine_data"] = engine_data
+                response_object["engine_data"] = None
                 response_object["scored_response"] = scored_response
                 response_object["weight_scores"] = {
                     "new": float(self.scores[processed_uids[i]]),
@@ -323,97 +261,6 @@ class PromptInjectionValidator(BaseNeuron):
                     "weight": query["weight"],
                 }
 
-                if self.wandb_enabled:
-                    wandb_logs = [
-                        {
-                            f"{response_object['UID']}:{response_object['hotkey']}_confidence": response_object[
-                                "response"
-                            ][
-                                "confidence"
-                            ]
-                        },
-                        {
-                            f"{response_object['UID']}:{response_object['hotkey']}_scores_total": response_object[
-                                "scored_response"
-                            ][
-                                "scores"
-                            ][
-                                "total"
-                            ]
-                        },
-                        {
-                            f"{response_object['UID']}:{response_object['hotkey']}_scores_distance": response_object[
-                                "scored_response"
-                            ][
-                                "scores"
-                            ][
-                                "distance"
-                            ]
-                        },
-                        {
-                            f"{response_object['UID']}:{response_object['hotkey']}_scores_speed": response_object[
-                                "scored_response"
-                            ][
-                                "scores"
-                            ][
-                                "speed"
-                            ]
-                        },
-                        {
-                            f"{response_object['UID']}:{response_object['hotkey']}_raw_scores_distance": response_object[
-                                "scored_response"
-                            ][
-                                "raw_scores"
-                            ][
-                                "distance"
-                            ]
-                        },
-                        {
-                            f"{response_object['UID']}:{response_object['hotkey']}_raw_scores_speed": response_object[
-                                "scored_response"
-                            ][
-                                "raw_scores"
-                            ][
-                                "speed"
-                            ]
-                        },
-                        {
-                            f"{response_object['UID']}:{response_object['hotkey']}_weight_score_new": response_object[
-                                "weight_scores"
-                            ][
-                                "new"
-                            ]
-                        },
-                        {
-                            f"{response_object['UID']}:{response_object['hotkey']}_weight_score_old": response_object[
-                                "weight_scores"
-                            ][
-                                "old"
-                            ]
-                        },
-                        {
-                            f"{response_object['UID']}:{response_object['hotkey']}_weight_score_change": response_object[
-                                "weight_scores"
-                            ][
-                                "change"
-                            ]
-                        },
-                    ]
-
-                    for entry in response_object["engine_data"]:
-                        wandb_logs.append(
-                            {
-                                f"{response_object['UID']}:{response_object['hotkey']}_{entry['name']}_confidence": entry[
-                                    "confidence"
-                                ]
-                            },
-                        )
-                    for wandb_log in wandb_logs:
-                        self.wandb_handler.log(wandb_log)
-
-                    bt.logging.trace(
-                        f"Adding wandb logs for response data: {wandb_logs} for uid: {processed_uids[i]}"
-                    )
 
             bt.logging.debug(f"Processed response: {response_object}")
 
@@ -443,27 +290,6 @@ class PromptInjectionValidator(BaseNeuron):
 
         return speed_score
 
-    def get_response_penalties(self, response, hotkey, prompt):
-        """This function resolves the penalties for the response"""
-
-        similarity_penalty, base_penalty, duplicate_penalty = self.apply_penalty(
-            response, hotkey, prompt
-        )
-
-        distance_penalty_multiplier = 1.0
-        speed_penalty = 1.0
-
-        if base_penalty >= 20:
-            distance_penalty_multiplier = 0.0
-        elif base_penalty > 0.0:
-            distance_penalty_multiplier = 1 - ((base_penalty / 2.0) / 10)
-
-        if sum([similarity_penalty, duplicate_penalty]) >= 20:
-            speed_penalty = 0.0
-        elif sum([similarity_penalty, duplicate_penalty]) > 0.0:
-            speed_penalty = 1 - (
-                ((sum([similarity_penalty, duplicate_penalty])) / 2.0) / 10
-            )
 
         return distance_penalty_multiplier, speed_penalty
 
@@ -527,9 +353,7 @@ class PromptInjectionValidator(BaseNeuron):
         score_weights = {"distance": 0.85, "speed": 0.15}
 
         # Get penalty multipliers
-        distance_penalty, speed_penalty = self.get_response_penalties(
-            response, hotkey, prompt
-        )
+        distance_penalty, speed_penalty = 1, 1
 
         # Apply penalties to scores
         (

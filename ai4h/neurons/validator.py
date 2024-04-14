@@ -9,12 +9,12 @@ from argparse import ArgumentParser
 from uuid import uuid4
 import torch
 import bittensor as bt
-from llm_defender.base import utils
-from llm_defender.base.protocol import LLMDefenderProtocol
-from llm_defender.core.validators.validator import PromptInjectionValidator
-from llm_defender import __version__ as version
+from ai4h.base import utils
+from ai4h.base.protocol import AI4HProtocol
+from ai4h.core.validators.validator import EHRInjectionValidator
+from ai4h import __version__ as version
 
-def main(validator: PromptInjectionValidator):
+def main(validator: EHRInjectionValidator):
     """
     This function executes the main function for the validator.
     """
@@ -96,7 +96,7 @@ def main(validator: PromptInjectionValidator):
             
             responses = validator.dendrite.query(
                 uids_to_query,
-                LLMDefenderProtocol(
+                AI4HProtocol(
                     prompt=query["prompt"],
                     analyzer=query["analyzer"],
                     subnet_version=validator.subnet_version,
@@ -238,7 +238,7 @@ if __name__ == "__main__":
     )
 
     # Create a validator based on the Class definitions and initialize it
-    subnet_validator = PromptInjectionValidator(parser=parser)
+    subnet_validator = EHRInjectionValidator(parser=parser)
     if (
         not subnet_validator.apply_config(
             bt_classes=[bt.subtensor, bt.logging, bt.wallet]
