@@ -16,12 +16,14 @@ from healthi.base.utils import (
     timeout_decorator,
     validate_miner_blacklist,
     validate_numerical_value,
-    validate_prompt,
+    validate_data,
     sign_data,
 )
 from healthi.core.validators import penalty
 import requests
 import healthi.core.validators.scoring as scoring
+
+from healthi.config import DATA_API_URL
 
 import logging
 
@@ -51,7 +53,7 @@ class HealthiValidator(BaseNeuron):
         self.target_group = None
         self.blacklisted_miner_hotkeys = None
         self.load_validator_state = None
-        self.prompt = None
+        self.data_entry = None
 
 
     def apply_config(self, bt_classes) -> bool:
@@ -438,8 +440,8 @@ class HealthiValidator(BaseNeuron):
         )
         return similarity, base, duplicate
 
-    def get_api_prompt(self, hotkey, signature, synapse_uuid, timestamp, nonce) -> dict:
-        """Retrieves a prompt from the prompt API"""
+    def get_api_data(self, hotkey, signature, synapse_uuid, timestamp, nonce) -> dict:
+        """Retrieves a data from the data API"""
 
         headers = {
             "X-Hotkey": hotkey,
@@ -449,49 +451,49 @@ class HealthiValidator(BaseNeuron):
             "X-Nonce": nonce
         }
 
-        prompt_api_url = "https://api.synapsec.ai/prompt"
+        data_api_url = DATA_API_URL
 
         try:
-            # get prompt
-            res = requests.post(url=prompt_api_url, headers=headers, data={}, timeout=6)
+            # get data
+            res = requests.post(url=data_api_url, headers=headers, data={}, timeout=6)
             # check for correct status code
             if res.status_code == 200:
-                # get prompt entry from the API output
-                prompt_entry = res.json()
-                # check to make sure prompt is valid
+                # get data entry from the API output
+                data_entry = res.json()
+                # check to make sure data is valid
                 bt.logging.trace(
-                    f"Loaded remote prompt to serve to miners: {prompt_entry}"
+                    f"Loaded remote data to serve to miners: {data_entry}"
                 )
-                return prompt_entry
+                return data_entry
 
             else:
                 bt.logging.warning(
-                    f"Unable to get prompt from the Prompt API: HTTP/{res.status_code} - {res.json()}"
+                    f"Unable to get data from API: HTTP/{res.status_code} - {res.json()}"
                 )
         except requests.exceptions.ReadTimeout as e:
-            bt.logging.error(f"Prompt API request timed out: {e}")
+            bt.logging.error(f"Data API request timed out: {e}")
         except requests.exceptions.JSONDecodeError as e:
-            bt.logging.error(f"Unable to read the response from the prompt API: {e}")
+            bt.logging.error(f"Unable to read the response from the Data API: {e}")
         except requests.exceptions.ConnectionError as e:
-            bt.logging.error(f"Unable to connect to the prompt API: {e}")
+            bt.logging.error(f"Unable to connect to the Data API: {e}")
         except Exception as e:
             bt.logging.error(f'Generic error during request: {e}')
 
-    def get_local_prompt(self, hotkey, synapse_uuid):
+    def get_local_data(self, hotkey, synapse_uuid):
         try:
             # Get the old dataset if the API cannot be called for some reason
-            entry = mock_data.get_prompt(hotkey, synapse_uuid)
+            entry = mock_data.get_data(hotkey, synapse_uuid)
             return entry
         except Exception as e:
             raise RuntimeError(
-                f"Unable to retrieve a prompt from the API and from local database: {e}"
+                f"Unable to retrieve a data from the API and from local database: {e}"
             ) from e
 
-    def serve_prompt(self, synapse_uuid) -> dict:
-        """Generates a prompt to serve to a miner
+    def serve_data(self, synapse_uuid) -> dict:
+        """Generates a data to serve to a miner
 
-        This function queries a prompt from the API, and if the API
-        fails for some reason it selects a random prompt from the local dataset
+        This function queries a data from the API, and if the API
+        fails for some reason it selects a random data from the local dataset
         to be served for the miners connected to the subnet.
 
         Args:
@@ -502,33 +504,33 @@ class HealthiValidator(BaseNeuron):
                 A dict instance
         """
         if self.target_group == 0:
-            # Attempt to get prompt from prompt API
+            # Attempt to get data from API
             nonce = str(secrets.token_hex(24))
             timestamp = str(int(time.time()))
 
             data = f'{synapse_uuid}{nonce}{timestamp}'
 
-            entry = self.get_api_prompt(
+            entry = self.get_api_data(
                 hotkey=self.wallet.hotkey.ss58_address,
                 signature=sign_data(wallet=self.wallet, data=data),
                 synapse_uuid=synapse_uuid, timestamp=timestamp, nonce=nonce
             )
-            if not validate_prompt(entry):
+            if not validate_data(entry):
                 bt.logging.warning(
-                    f"Received prompt from prompt API '{entry}' but the validation failed. Using local prompt instead."
+                    f"Received data from API '{entry}' but the validation failed. Using local data instead."
                 )
-                self.prompt = self.get_local_prompt(
+                self.data_entry = self.get_local_data(
                     hotkey = self.wallet.hotkey.ss58_address, 
                     synapse_uuid = synapse_uuid
                 )
                 logging.debug(
-                    f"Received local prompt {self.prompt}"
+                    f"Received local data {self.data_entry}"
                 )
-                print(f"Received local prompt {self.prompt}")
+                print(f"Received local data {self.data_entry}")
             else:
-                self.prompt = entry
+                self.data_entry = entry
 
-        return self.prompt
+        return self.data_entry
 
     def check_hotkeys(self):
         """Checks if some hotkeys have been replaced in the metagraph"""

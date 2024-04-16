@@ -14,4 +14,7 @@ Validator needs update:
     2. validator.serve_prompt line 78
 3. healthi.core.validator   scoring and penalty
 
+Mock data:
+1. healthi.base.mock_data.py
+
 
