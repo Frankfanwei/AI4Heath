@@ -13,12 +13,12 @@ import bittensor as bt
 from healthi.base.neuron import BaseNeuron
 from healthi.base.protocol import HealthiProtocol
 from healthi.base.utils import validate_miner_blacklist, validate_signature
-from healthi.core.miners.analyzers.disease_prediction.model import DiseasePredictor
+from healthi.core.miners.tasks.disease_prediction.model import DiseasePredictor
 
 
 class HealthiMiner(BaseNeuron):
     """
-    The AI4HMiner class contains all of the code for a Miner neuron
+    The HealthiMiner class contains all of the code for a Miner neuron
 
     Attributes:
         neuron_config:
@@ -65,7 +65,7 @@ class HealthiMiner(BaseNeuron):
 
     def __init__(self, parser: ArgumentParser):
         """
-        Initializes the LLMDefenderMiner class with attributes neuron_config,
+        Initializes the Miner class with attributes neuron_config,
         miner_set_weights, chromadb_client, model, tokenizer, yara_rules, wallet,
         subtensor, metagraph, miner_uid & hotkey_blacklisted.
 
@@ -93,6 +93,13 @@ class HealthiMiner(BaseNeuron):
         self.wallet, self.subtensor, self.metagraph, self.miner_uid = self.setup()
 
         self.hotkey_blacklisted = False
+
+        # Initialize the analyzers
+        self.tasks = {
+            "Disease Prediction": DiseasePredictor(
+                wallet=self.wallet, subnet_version=self.subnet_version, miner_uid = self.miner_uid
+            )
+        }
 
 
     def setup(self) -> Tuple[bt.wallet, bt.subtensor, bt.metagraph, str]:
@@ -178,7 +185,7 @@ class HealthiMiner(BaseNeuron):
 
         return False
 
-    def blacklist(self, synapse: LLMDefenderProtocol) -> Tuple[bool, str]:
+    def blacklist(self, synapse: HealthiProtocol) -> Tuple[bool, str]:
         """
         This function is executed before the synapse data has been
         deserialized.
@@ -219,20 +226,20 @@ class HealthiMiner(BaseNeuron):
         uid = self.metagraph.hotkeys.index(synapse.dendrite.hotkey)
         print("uid:", uid)
         print("metagraph", self.metagraph)
-        # if not self.metagraph.validator_permit[uid]:
-        #     bt.logging.info(f"Blacklisted non-validator: {synapse.dendrite.hotkey}")
-        #     return (True, f"Hotkey {synapse.dendrite.hotkey} is not a validator")
+        if not self.metagraph.validator_permit[uid]:
+            bt.logging.info(f"Blacklisted non-validator: {synapse.dendrite.hotkey}")
+            return (True, f"Hotkey {synapse.dendrite.hotkey} is not a validator")
 
         # Blacklist entities that have insufficient stake
         stake = float(self.metagraph.S[uid])
-        # if stake < self.validator_min_stake:
-        #     bt.logging.info(
-        #         f"Blacklisted validator {synapse.dendrite.hotkey} with insufficient stake: {stake}"
-        #     )
-        #     return (
-        #         True,
-        #         f"Hotkey {synapse.dendrite.hotkey} has insufficient stake: {stake}",
-        #     )
+        if stake < self.validator_min_stake:
+            bt.logging.info(
+                f"Blacklisted validator {synapse.dendrite.hotkey} with insufficient stake: {stake}"
+            )
+            return (
+                True,
+                f"Hotkey {synapse.dendrite.hotkey} has insufficient stake: {stake}",
+            )
 
         # Allow all other entities
         bt.logging.info(
@@ -240,7 +247,7 @@ class HealthiMiner(BaseNeuron):
         )
         return (False, f"Accepted hotkey: {synapse.dendrite.hotkey}")
 
-    def priority(self, synapse: AI4HProtocol) -> float:
+    def priority(self, synapse: HealthiProtocol) -> float:
         """
         This function defines the priority based on which the validators
         are selected. Higher priority value means the input from the
@@ -248,8 +255,8 @@ class HealthiMiner(BaseNeuron):
 
         Inputs:
             synapse:
-                The synapse should be the AI4HProtocol class
-                (from ai4h/base/protocol.py)
+                The synapse should be the HealthiProtocol class
+                (from healthi/base/protocol.py)
 
         Returns:
             stake:
@@ -270,23 +277,22 @@ class HealthiMiner(BaseNeuron):
 
         return stake
 
-    def forward(self, synapse: AI4HProtocol) -> AI4HProtocol:
+    def forward(self, synapse: HealthiProtocol) -> HealthiProtocol:
         """
         The function is executed once the data from the
         validator has been deserialized, which means we can utilize the
         data to control the behavior of this function. All confidence
         score outputs, alongside other relevant output metadata--subnet_version,
-        synapse_uuid--are appended to synapse.output.
 
         Inputs:
             synapse:
-                The synapse should be the AI4HProtocol class
-                (from ai4h/base/protocol.py)
+                The synapse should be the HealthiProtocol class
+                (from healthi/base/protocol.py)
 
         Returns:
             synapse:
-                The synapse should be the AI4HProtocol class
-                (from ai4h/base/protocol.py)
+                The synapse should be the HealthiProtocol class
+                (from healthi/base/protocol.py)
         """
 
         # Print version information and perform version checks
@@ -299,7 +305,7 @@ class HealthiMiner(BaseNeuron):
             )
 
         # Synapse signature verification
-        data = f'{synapse.synapse_uuid}{synapse.synapse_nonce}{synapse.synapse_timestamp}'
+        data = f'{synapse.synapse_nonce}{synapse.synapse_timestamp}'
         if not validate_signature(
             hotkey=synapse.dendrite.hotkey,
             data=data,
@@ -314,24 +320,22 @@ class HealthiMiner(BaseNeuron):
                 f"Succesfully validated signature for the synapse. Hotkey: {synapse.dendrite.hotkey}, data: {data}, signature: {synapse.synapse_signature}"
             )
 
-        # Execute the correct analyzer
-        if synapse.analyzer == "Disease Prediction":
-            print(f"Executing the {synapse.analyzer} model")
-            output = self.analyzers["Disease Prediction"].execute(synapse=synapse)
+        # Execute the correct task
+        # output keys: task, EHR, predicted_probs, subnet_version, nonce, timestamp, signature 
+        if synapse.task == "Disease Prediction":
+            print(f"Executing the {synapse.task} model")
+            output = self.tasks["Disease Prediction"].execute(synapse=synapse)
         else:
             bt.logging.error(
-                f"Unable to process synapse: {synapse} due to invalid analyzer: {synapse.analyzer}"
+                f"Unable to process synapse: {synapse} due to invalid task: {synapse.task}"
             )
             return synapse
 
         print(
-            f'Processed EHR: {output["ehr"]} with analyzer: {output["analyzer"]}'
-        )
-        print(
-            f'Engine data for {output["analyzer"]} analyzer: {output["engines"]}'
+            f'Processed EHR: {output["EHR"]} with predictor: {output["task"]}'
         )
         bt.logging.success(
-            f'Processed synapse from UID: {self.metagraph.hotkeys.index(synapse.dendrite.hotkey)} - Confidence: {output["confidence"]} - UUID: {output["synapse_uuid"]}'
+            f'Processed synapse from UID: {self.metagraph.hotkeys.index(synapse.dendrite.hotkey)} - Probs: {output["predicted_probs"]}'
         )
 
         return synapse

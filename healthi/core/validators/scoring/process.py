@@ -305,7 +305,7 @@ def get_engine_response_object(
 
 
 def get_response_object(
-    uid: str, hotkey: str, target: float, prompt: str, synapse_uuid: str
+    uid: str, hotkey: str, target: list, EHR: list, synapse_uuid: str
 ) -> dict:
     """Returns the template for the response object"""
 
@@ -313,12 +313,10 @@ def get_response_object(
         "UID": uid,
         "hotkey": hotkey,
         "target": target,
-        "original_prompt": prompt,
-        "synapse_uuid": synapse_uuid,
+        "EHR": EHR,
         "response": {},
         "scored_response": get_engine_response_object(),
-        "weight_scores": {"new": 0.0, "old": 0.0, "change": 0.0, "unweighted": 0.0},
-        "engine_data": [],
+        "weight_scores": {"new": 0.0, "old": 0.0, "change": 0.0, "unweighted": 0.0}
     }
 
     return response

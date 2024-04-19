@@ -3,7 +3,9 @@ import secrets
 import bittensor as bt
 from healthi.base.protocol import HealthiProtocol
 from healthi.base.utils import sign_data
-
+from transformers import AutoTokenizer, AutoModelForSequenceClassification
+import torch
+import numpy as np
 
 class DiseasePredictor:
     """This class is responsible for completing disease prediction
@@ -17,32 +19,45 @@ class DiseasePredictor:
     
     """
 
-    def __init__(self, wallet: bt.wallet, subnet_version: int, wandb_handler, miner_uid: int):
+    def __init__(self, wallet: bt.wallet, subnet_version: int, miner_uid: int):
         # Parameters
         self.wallet = wallet
         self.miner_hotkey = self.wallet.hotkey.ss58_address
         self.subnet_version = subnet_version
         self.miner_uid = miner_uid
         # ADD MODEL HERE
+        self.model_name = "Healthi/disease_prediction_v1.0"
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, use_fast=False)
+        self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name)
     
+
+    def inference(query, model, tokenizer):
+        inputs = tokenizer.encode_plus(query, return_token_type_ids=True, return_tensors="pt", max_length=512, truncation=True)
+
+        with torch.no_grad():
+            outputs = model(**inputs)
+
+        logits = outputs.logits.squeeze()
+        probabilities = 1 / (1 + np.exp(-logits))
+        
+        return probabilities.numpy() 
 
     def execute(self, synapse: HealthiProtocol) -> dict:
         # Responses are stored in a dict
-        output = {"analyzer": "Disease Prediction", "prompt": synapse.prompt, "predicted_label": None}
+        output = {"task": "Disease Prediction", "EHR": synapse.EHR, "predicted_probs": None}
 
-        engine_confidences = []
 
         # Execute Model Here
-        output['predicted_label'] = XXX
+        EHR = ' '.join([item for sublist in x for item in synapse.prompt])
+        output['predicted_probs'] = self.inference(EHR, self.model, self.tokenizer)
         
 
         # Add subnet version and UUID to the output
         output["subnet_version"] = self.subnet_version
-        output["synapse_uuid"] = synapse.synapse_uuid
         output["nonce"] = secrets.token_hex(24)
         output["timestamp"] = str(int(time.time()))
         
-        data_to_sign = f'{output["synapse_uuid"]}{output["nonce"]}{output["timestamp"]}'
+        data_to_sign = f'{output["nonce"]}{output["timestamp"]}'
 
         # Generate signature for the response
         output["signature"] = sign_data(self.wallet, data_to_sign)

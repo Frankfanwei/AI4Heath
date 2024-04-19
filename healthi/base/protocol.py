@@ -14,24 +14,18 @@ class HealthiProtocol(bt.Synapse):
     """
 
     # Parse variables
-    prompt: typing.Optional[str] = None
+    EHR: typing.Optional[list] = None
     output: typing.Optional[dict] = None
-
-    synapse_uuid: str = pydantic.Field(
-        ...,
-        description="Synapse UUID provides an unique identifier for the prompt send out by the validator",
-        allow_mutation=False
-    )
 
     synapse_nonce: str = pydantic.Field(
         ...,
-        description="Synapse nonce provides an unique identifier for the prompt send out by the validator",
+        description="Synapse nonce provides an unique identifier for the data send out by the validator",
         allow_mutation=False
     )
 
     synapse_timestamp: str = pydantic.Field(
         ...,
-        description="Synapse timestamp provides an unique identifier for the prompt send out by the validator",
+        description="Synapse timestamp provides an unique identifier for the data send out by the validator",
         allow_mutation=False
     )
 
@@ -41,10 +35,10 @@ class HealthiProtocol(bt.Synapse):
         allow_mutation=False,
     )
 
-    analyzer: str = pydantic.Field(
+    task: str = pydantic.Field(
         ...,
-        title="analyzer",
-        description="The analyzer field provides instructions on which Analyzer to execute on the miner",
+        title="task",
+        description="The task field provides instructions on which task to execute on the miner",
         allow_mutation=False,
     )
 

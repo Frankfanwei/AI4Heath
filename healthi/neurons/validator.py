@@ -6,7 +6,6 @@ import traceback
 import sys
 import secrets
 from argparse import ArgumentParser
-from uuid import uuid4
 import torch
 import bittensor as bt
 from healthi.base import utils
@@ -74,8 +73,7 @@ def main(validator: HealthiValidator):
                 bt.logging.info(f"Updated scores, new scores: {validator.scores}")
 
             # Get the query to send to the valid Axons
-            synapse_uuid = str(uuid4())
-            query = validator.serve_prompt(synapse_uuid)
+            query = validator.serve_data()
 
             # Get list of UIDs to query
             (
@@ -92,15 +90,14 @@ def main(validator: HealthiValidator):
             # Broadcast query to valid Axons
             nonce = secrets.token_hex(24)
             timestamp = str(int(time.time()))
-            data_to_sign = f'{synapse_uuid}{nonce}{timestamp}'
+            data_to_sign = f'{nonce}{timestamp}'
             
             responses = validator.dendrite.query(
                 uids_to_query,
                 HealthiProtocol(
-                    prompt=query["prompt"],
-                    analyzer=query["analyzer"],
+                    EHR=query["EHR"],
+                    task=query["task"],
                     subnet_version=validator.subnet_version,
-                    synapse_uuid=synapse_uuid,
                     synapse_signature=utils.sign_data(wallet=validator.wallet, data=data_to_sign),
                     synapse_nonce=nonce,
                     synapse_timestamp=timestamp
@@ -157,8 +154,7 @@ def main(validator: HealthiValidator):
             response_data = validator.process_responses(
                 query=query,
                 processed_uids=list_of_uids,
-                responses=responses,
-                synapse_uuid=synapse_uuid,
+                responses=responses
             )
 
             for res in response_data:

@@ -6,57 +6,6 @@ import gc
 import multiprocessing
 import bittensor as bt
 
-class EngineResponse:
-    """
-    This class implements a consistent way of representing different
-    responses produced by the miners.
-
-    Attributes:
-        confidence:
-            An instance of float displaying the confidence score for a miner.
-        data:
-            An instance of dict displaying the data associated with the miner's response.
-        name:
-            An instance of str displaying the name/identifier of the miner.
-
-    Methods:
-        __init__():
-            Initializes the EngineResponse class with attributes confidence, data & name.
-        get_dict()
-            Returns a dict representation of the EngineResponse class.
-    """
-
-    def __init__(self, confidence: float, data: dict, name: str):
-        """
-        Initializes the confidence, data & name attributes.
-
-        Arguments:
-            confidence:
-                An instance of float displaying the confidence score for a miner.
-            data:
-                An instance of dict displaying the data associated with the miner's response.
-            name:
-                An instance of str displaying the name/identifier of the miner.
-
-        Returns:
-            None
-        """
-        self.confidence = confidence
-        self.data = data
-        self.name = name
-
-    def get_dict(self) -> dict:
-        """
-        This function returns dict representation of the class.
-
-        Arguments:
-            None
-
-        Returns:
-            dict:
-                A dict instance with keys "name", "confidence" and "data"
-        """
-        return {"name": self.name, "confidence": self.confidence, "data": self.data}
 
 def validate_numerical_value(value, value_type, min_value, max_value):
     """Validates that a given value is a specific type and between the
@@ -266,34 +215,34 @@ def validate_uid(uid):
         return False
     return True
 
-def validate_response_data(engine_response: dict) -> bool:
-    """Validates the engine response contains correct data
+# def validate_response_data(engine_response: dict) -> bool:
+#     """Validates the engine response contains correct data
     
-    Arguments:
-        engine_response:
-            A dict containing the individual response produces by an
-            engine
+#     Arguments:
+#         engine_response:
+#             A dict containing the individual response produces by an
+#             engine
     
-    Returns:
-        result:
-            A bool depicting the validity of the response
-    """
+#     Returns:
+#         result:
+#             A bool depicting the validity of the response
+#     """
     
-    if isinstance(engine_response, bool) or not isinstance(engine_response, dict):
-        return False
+#     if isinstance(engine_response, bool) or not isinstance(engine_response, dict):
+#         return False
     
-    required_keys = ["name", "confidence", "data"]
-    for _,key in enumerate(required_keys):
-        if key not in engine_response.keys():
-            return False
-        if engine_response[key] is None or engine_response[key] == "" or engine_response[key] == [] or engine_response[key] == {} or isinstance(engine_response[key], bool):
-            return False
+#     required_keys = ["name", "confidence", "data"]
+#     for _,key in enumerate(required_keys):
+#         if key not in engine_response.keys():
+#             return False
+#         if engine_response[key] is None or engine_response[key] == "" or engine_response[key] == [] or engine_response[key] == {} or isinstance(engine_response[key], bool):
+#             return False
         
-        if key == "confidence":
-            if not validate_numerical_value(value=engine_response[key], value_type=float, min_value=0.0, max_value=1.0):
-                return False
+#         if key == "confidence":
+#             if not validate_numerical_value(value=engine_response[key], value_type=float, min_value=0.0, max_value=1.0):
+#                 return False
         
-    return True
+#     return True
 
 def validate_signature(hotkey: str, data: str, signature: str) -> bool:
     """Validates that the given hotkey has been used to generate the
@@ -350,34 +299,24 @@ def sign_data(wallet: bt.wallet, data: str) -> str:
 def validate_data(data_dict):
 
     # define valid data types for each key to check later
+    # task, weight, hotkey, created_at, EHR, admission_time, label
     key_types = {
-    'analyzer':str,
-    'category':str,
-    'visit':str,
-    'label':int,
-    'weight':(int, float),
+    'task':str,
+    'admission_time':list,
+    'EHR':list,
+    'label':list,
+    'weight':list,
     'hotkey': str,
-    'synapse_uuid': str,
     'created_at': str,
     }
     # run checks
     if not isinstance(data_dict, dict):
         return False
-    if len([pd for pd in data_dict]) != 8:
+    if len([pd for pd in data_dict]) != 7:
         return False
     for pd in data_dict:
-        if pd not in ['analyzer','category','visit','label','weight', 'created_at', 'synapse_uuid', 'hotkey']:
+        if pd not in ['task', 'weight', 'hotkey', 'created_at', 'EHR', 'admission_time', 'label']:
             return False 
         if not isinstance(data_dict[pd], key_types[pd]):
             return False 
-        elif pd == 'label':
-            if isinstance(data_dict[pd], bool):
-                return False
-            if data_dict[pd] not in [0,1]:
-                return False
-        elif pd == 'weight':
-            if isinstance(data_dict[pd], bool):
-                return False 
-            if not (0.0 < data_dict[pd] <= 1.0):
-                return False
     return True

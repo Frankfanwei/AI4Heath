@@ -1,7 +1,7 @@
 Miner needs update:
 1. healthi.base.protocol line44–45 (analyzer)
 2. healthi.core.miners.analyzers.disease_prediction.model
-3. healthi.core.miners.miner.py line 317—337 (analyzer exute), line 339, 359 (subnet id blacklist)
+3. healthi.core.miners.miner.py line 317—337 (analyzer execute), line 339, 359 (subnet id blacklist)
 
 Validator needs update:
 1. healthi.core.validators.validator.py
@@ -17,4 +17,8 @@ Validator needs update:
 Mock data:
 1. healthi.base.mock_data.py
 
+Utils
+2. healthi.base.utils line 218 def validate_response_data
 
+Model inference
+core.miner.tasks.disease_prediction.model  line 51

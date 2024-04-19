@@ -178,7 +178,6 @@ class HealthiValidator(BaseNeuron):
         processed_uids: torch.tensor,
         query: dict,
         responses: list,
-        synapse_uuid: str,
     ) -> list:
         """
         This function processes the responses received from the miners.
@@ -186,7 +185,7 @@ class HealthiValidator(BaseNeuron):
 
         target = query["label"]
 
-        bt.logging.debug(f"Confidence target set to: {target}")
+        bt.logging.debug(f"prediction target set to: {target}")
 
         # Initiate the response objects
         response_data = []
@@ -199,9 +198,10 @@ class HealthiValidator(BaseNeuron):
             hotkey = self.metagraph.hotkeys[processed_uids[i]]
 ## --------------------------------------------------------------------------------------- ## 
 ## --------------------------------------------------------------------------------------- ## 
+            # output keys: task, EHR, predicted_probs, subnet_version, nonce, timestamp, signature 
             # Get the default response object
             response_object = scoring.process.get_response_object(
-                processed_uids[i], hotkey, target, query["prompt"], synapse_uuid
+                processed_uids[i], hotkey, target, query["EHR"]
             )
 
             # Set the score for invalid responses to 0.0
@@ -236,9 +236,8 @@ class HealthiValidator(BaseNeuron):
                 )
 
                 miner_response = {
-                    "prompt": response.output["prompt"],
-                    "confidence": response.output["confidence"],
-                    "synapse_uuid": response.output["synapse_uuid"],
+                    "EHR": response.output["EHR"],
+                    "predicted_probs": response.output["predicted_probs"],
                     "signature": response.output["signature"],
                     "nonce": response.output["nonce"],
                     "timestamp": response.output["timestamp"],
@@ -254,7 +253,6 @@ class HealthiValidator(BaseNeuron):
 
                 # Populate response data
                 response_object["response"] = miner_response
-                response_object["engine_data"] = None
                 response_object["scored_response"] = scored_response
                 response_object["weight_scores"] = {
                     "new": float(self.scores[processed_uids[i]]),
@@ -276,6 +274,7 @@ class HealthiValidator(BaseNeuron):
 ## --------------------------------------------------------------------------------------- ## 
 ## --------------------------------------------------------------------------------------- ## 
         return response_data
+
 
     def calculate_subscore_speed(self, hotkey, response_time):
         """Calculates the speed subscore for the response"""
@@ -384,7 +383,6 @@ class HealthiValidator(BaseNeuron):
             "hotkey": hotkey,
             "prompt": prompt,
             "target": target,
-            "synapse_uuid": response["synapse_uuid"],
             "score_weights": score_weights,
             "penalties": {"distance": distance_penalty, "speed": speed_penalty},
             "raw_scores": {"distance": distance_score, "speed": speed_score},
@@ -440,13 +438,12 @@ class HealthiValidator(BaseNeuron):
         )
         return similarity, base, duplicate
 
-    def get_api_data(self, hotkey, signature, synapse_uuid, timestamp, nonce) -> dict:
+    def get_api_data(self, hotkey, signature, timestamp, nonce) -> dict:
         """Retrieves a data from the data API"""
 
         headers = {
             "X-Hotkey": hotkey,
             "X-Signature": signature,
-            "X-SynapseUUID": synapse_uuid,
             "X-Timestamp": timestamp,
             "X-Nonce": nonce
         }
@@ -479,17 +476,17 @@ class HealthiValidator(BaseNeuron):
         except Exception as e:
             bt.logging.error(f'Generic error during request: {e}')
 
-    def get_local_data(self, hotkey, synapse_uuid):
+    def get_local_data(self, hotkey):
         try:
             # Get the old dataset if the API cannot be called for some reason
-            entry = mock_data.get_data(hotkey, synapse_uuid)
+            entry = mock_data.get_data(hotkey)
             return entry
         except Exception as e:
             raise RuntimeError(
                 f"Unable to retrieve a data from the API and from local database: {e}"
             ) from e
 
-    def serve_data(self, synapse_uuid) -> dict:
+    def serve_data(self) -> dict:
         """Generates a data to serve to a miner
 
         This function queries a data from the API, and if the API
@@ -508,20 +505,19 @@ class HealthiValidator(BaseNeuron):
             nonce = str(secrets.token_hex(24))
             timestamp = str(int(time.time()))
 
-            data = f'{synapse_uuid}{nonce}{timestamp}'
+            data = f'{nonce}{timestamp}'
 
             entry = self.get_api_data(
                 hotkey=self.wallet.hotkey.ss58_address,
                 signature=sign_data(wallet=self.wallet, data=data),
-                synapse_uuid=synapse_uuid, timestamp=timestamp, nonce=nonce
+                timestamp=timestamp, nonce=nonce
             )
             if not validate_data(entry):
                 bt.logging.warning(
                     f"Received data from API '{entry}' but the validation failed. Using local data instead."
                 )
                 self.data_entry = self.get_local_data(
-                    hotkey = self.wallet.hotkey.ss58_address, 
-                    synapse_uuid = synapse_uuid
+                    hotkey = self.wallet.hotkey.ss58_address
                 )
                 logging.debug(
                     f"Received local data {self.data_entry}"
