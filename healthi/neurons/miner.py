@@ -28,7 +28,7 @@ def main(miner: HealthiMiner):
     # Attach the miner functions to the Axon
     axon.attach(
         forward_fn=miner.forward,
-        blacklist_fn=miner.blacklist,
+        #blacklist_fn=miner.blacklist,
         priority_fn=miner.priority,
     )
     bt.logging.info(f"Attached functions to Axon: {axon}")
@@ -87,9 +87,9 @@ def main(miner: HealthiMiner):
 
                     miner.last_updated_block = miner.subtensor.block
 
-                if miner.step % 300 == 0:
+                # if miner.step % 300 == 0:
                     # Check if the miners hotkey is on the remote blacklist
-                    miner.check_remote_blacklist()
+                    # miner.check_remote_blacklist()
 
                 if miner.step % 600 == 0:
                     bt.logging.debug(

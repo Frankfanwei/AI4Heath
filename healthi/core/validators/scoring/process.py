@@ -3,10 +3,10 @@
 from bittensor import logging
 from torch import Tensor
 from copy import deepcopy
-import llm_defender.base.utils as utils
+import healthi.base.utils as utils
+import numpy as np
 
-
-def calculate_distance_score(target: float, engine_response: dict) -> float:
+def calculate_distance_score(target, probs, label_weight) -> float:
     """This function calculates the distance score for a response
 
     The distance score is a result of the absolute distance for the
@@ -26,14 +26,12 @@ def calculate_distance_score(target: float, engine_response: dict) -> float:
             A dict containing the scores associated with the engine
     """
 
-    if not utils.validate_numerical_value(
-        engine_response["confidence"], float, 0.0, 1.0
-    ):
-        return 1.0
+    if not utils.is_list_or_array(probs):
+        return 0.0
+    else:
+        scores = (1 - np.abs(np.array(probs)-np.array(target))) * np.array(label_weight) # overall scores
+        return scores
 
-    distance = abs(target - engine_response["confidence"])
-
-    return distance
 
 
 def calculate_total_distance_score(distance_scores: list) -> float:
@@ -62,37 +60,19 @@ def calculate_total_distance_score(distance_scores: list) -> float:
     return total_distance_score
 
 
-def calculate_subscore_distance(response, target) -> float:
-    """Calculates the distance subscore for the response"""
-
-    # Validate the engine responses and calculate distance score
-    distance_scores = []
-
-    if isinstance(response, bool) or not isinstance(response, dict):
-        return None
-
-    # If engine response is invalid, return None
-    if (
-        "engines" not in response.keys()
-        or isinstance(response["engines"], bool)
-        or not isinstance(response["engines"], list)
-        or response["engines"] == []
-        or len(response["engines"]) != 3
-    ):
-        return None
-
-    for _, engine_response in enumerate(response["engines"]):
-        if not utils.validate_response_data(engine_response):
-            return None
-
-        distance_scores.append(calculate_distance_score(target, engine_response))
-
-    total_distance_score = calculate_total_distance_score(distance_scores)
-
-    return total_distance_score
 
 
-def calculate_subscore_speed(timeout, response_time):
+def calculate_subscore_distance(response, target, label_weight) -> float:
+    predicted_probs = response["predicted_probs"]
+
+    distance_score = calculate_distance_score(target, predicted_probs, label_weight)
+    return np.sum(distance_score)
+    
+
+
+
+
+def calculate_subscore_speed(timeout, response_time, label_weight):
     """Calculates the speed subscore for the response"""
 
     if isinstance(response_time, bool) or not isinstance(response_time, (float, int)):
@@ -106,7 +86,8 @@ def calculate_subscore_speed(timeout, response_time):
 
     speed_score = 1.0 - (response_time / timeout)
 
-    return speed_score
+
+    return speed_score * np.sum(label_weight)
 
 
 def validate_response(hotkey, response) -> bool:
@@ -133,10 +114,9 @@ def validate_response(hotkey, response) -> bool:
 
     # Check for mandatory keys
     mandatory_keys = [
-        "confidence",
-        "prompt",
-        "engines",
-        "synapse_uuid",
+        "predicted_probs",
+        "task",
+        "EHR",
         "subnet_version",
         "signature",
         "nonce",
@@ -157,7 +137,7 @@ def validate_response(hotkey, response) -> bool:
             return False
 
     # Check signature
-    data = f'{response["synapse_uuid"]}{response["nonce"]}{response["timestamp"]}'
+    data = f'{response["nonce"]}{response["timestamp"]}'
     if not utils.validate_signature(
         hotkey=hotkey, data=data, signature=response["signature"]
     ):
@@ -171,17 +151,15 @@ def validate_response(hotkey, response) -> bool:
         )
 
     # Check the validity of the confidence score
-    if isinstance(response["confidence"], bool) or not isinstance(
-        response["confidence"], (float, int)
-    ):
-        logging.trace(f"Confidence is not correct type: {response['confidence']}")
+    if not utils.is_list_or_array(response["predicted_probs"]):
+        logging.trace(f"predicted_probs is not correct type: {response['predicted_probs']}")
         return False
 
-    if not 0.0 <= float(response["confidence"]) <= 1.0:
-        logging.trace(
-            f"Confidence is out-of-bounds for response: {response['confidence']}"
-        )
-        return False
+    # if not 0.0 <= float(response["confidence"]) <= 1.0:
+    #     logging.trace(
+    #         f"Confidence is out-of-bounds for response: {response['confidence']}"
+    #     )
+    #     return False
 
     # The response has passed the validation
     logging.trace(f"Validation succeeded for response: {response}")
@@ -189,7 +167,7 @@ def validate_response(hotkey, response) -> bool:
 
 
 def assign_score_for_uid(
-    scores: Tensor, uid: int, alpha: float, response_score: float, prompt_weight: float
+    scores: Tensor, uid: int, alpha: float, response_score: float, sample_weight: float
 ):
     """Assigns a score to an UID
 
@@ -200,8 +178,8 @@ def assign_score_for_uid(
             UID of the neuron to set the score for
         alpha:
             Scaling factor used for the degradation
-        prompt_weight:
-            Weight of the current prompt.
+        sample_weight:
+            Weight of the current sample.
 
     Returns:
         scores:
@@ -221,13 +199,13 @@ def assign_score_for_uid(
         )
 
     if (
-        not isinstance(prompt_weight, (int, float))
-        or isinstance(prompt_weight, bool)
-        or not (0.0 < prompt_weight <= 1.0)
+        not isinstance(sample_weight, (int, float))
+        or isinstance(sample_weight, bool)
+        or not (0.0 < sample_weight <= 1.0)
     ):
-        logging.error(f"Value for prompt_weight is incorrect: {prompt_weight}")
+        logging.error(f"Value for sample_weight is incorrect: {sample_weight}")
         raise AttributeError(
-            f"prompt_weight must be greater than or equal to 0.0 and less than or equal to 1.0. Value: {prompt_weight}"
+            f"sample_weight must be greater than or equal to 0.0 and less than or equal to 1.0. Value: {sample_weight}"
         )
 
     # Ensure the response score is correctly defined
@@ -264,7 +242,7 @@ def assign_score_for_uid(
         f"Unweighted score for UID: {uid}. Unweighted score: {unweighted_new_score}"
     )
     diff = unweighted_new_score - scores[uid]
-    scores[uid] = scores[uid] + (prompt_weight * diff)
+    scores[uid] = scores[uid] + (sample_weight * diff)
     logging.trace(f"Assigned weighted score for UID: {uid}. New score: {scores[uid]}")
 
     if old_score == scores[uid]:
@@ -282,8 +260,6 @@ def get_engine_response_object(
     total_score: float = 0.0,
     final_distance_score: float = 0.0,
     final_speed_score: float = 0.0,
-    distance_penalty: float = 0.0,
-    speed_penalty: float = 0.0,
     raw_distance_score: float = 0.0,
     raw_speed_score: float = 0.0,
 ) -> dict:
@@ -298,14 +274,13 @@ def get_engine_response_object(
             "speed": final_speed_score,
         },
         "raw_scores": {"distance": raw_distance_score, "speed": raw_speed_score},
-        "penalties": {"distance": distance_penalty, "speed": speed_penalty},
     }
 
     return res
 
 
 def get_response_object(
-    uid: str, hotkey: str, target: list, EHR: list, synapse_uuid: str
+    uid: str, hotkey: str, target: list, EHR: list,
 ) -> dict:
     """Returns the template for the response object"""
 

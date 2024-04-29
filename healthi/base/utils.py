@@ -5,6 +5,14 @@ features and their engines.
 import gc
 import multiprocessing
 import bittensor as bt
+import numpy as np
+
+def is_list_or_array(value):
+    if isinstance(value, list) and all(isinstance(x, float) for x in value):
+        return 1
+    elif isinstance(value, np.ndarray) and value.dtype.kind in 'f':
+        return 1
+    return 0
 
 
 def validate_numerical_value(value, value_type, min_value, max_value):
@@ -215,34 +223,34 @@ def validate_uid(uid):
         return False
     return True
 
-# def validate_response_data(engine_response: dict) -> bool:
-#     """Validates the engine response contains correct data
+def validate_response_data(engine_response: dict) -> bool:
+    """Validates the engine response contains correct data
     
-#     Arguments:
-#         engine_response:
-#             A dict containing the individual response produces by an
-#             engine
+    Arguments:
+        engine_response:
+            A dict containing the individual response produces by an
+            engine
     
-#     Returns:
-#         result:
-#             A bool depicting the validity of the response
-#     """
+    Returns:
+        result:
+            A bool depicting the validity of the response
+    """
     
-#     if isinstance(engine_response, bool) or not isinstance(engine_response, dict):
-#         return False
+    if isinstance(engine_response, bool) or not isinstance(engine_response, dict):
+        return False
     
-#     required_keys = ["name", "confidence", "data"]
-#     for _,key in enumerate(required_keys):
-#         if key not in engine_response.keys():
-#             return False
-#         if engine_response[key] is None or engine_response[key] == "" or engine_response[key] == [] or engine_response[key] == {} or isinstance(engine_response[key], bool):
-#             return False
+    required_keys = ["name", "value", "data"]
+    for _,key in enumerate(required_keys):
+        if key not in engine_response.keys():
+            return False
+        if engine_response[key] is None or engine_response[key] == "" or engine_response[key] == [] or engine_response[key] == {} or isinstance(engine_response[key], bool):
+            return False
         
-#         if key == "confidence":
-#             if not validate_numerical_value(value=engine_response[key], value_type=float, min_value=0.0, max_value=1.0):
-#                 return False
+        if key == "value":
+            if not validate_numerical_value(value=engine_response[key], value_type=float, min_value=0.0, max_value=1.0):
+                return False
         
-#     return True
+    return True
 
 def validate_signature(hotkey: str, data: str, signature: str) -> bool:
     """Validates that the given hotkey has been used to generate the
@@ -305,18 +313,23 @@ def validate_data(data_dict):
     'admission_time':list,
     'EHR':list,
     'label':list,
-    'weight':list,
+    'weight': float,
     'hotkey': str,
     'created_at': str,
+    'label_weight': list,
     }
     # run checks
     if not isinstance(data_dict, dict):
+        print("data not dict!")
         return False
-    if len([pd for pd in data_dict]) != 7:
+    if len([pd for pd in data_dict]) != 8:
+        print("data not 8!")
         return False
     for pd in data_dict:
-        if pd not in ['task', 'weight', 'hotkey', 'created_at', 'EHR', 'admission_time', 'label']:
+        if pd not in ['task', 'weight', 'hotkey', 'created_at', 'EHR', 'admission_time', 'label', 'label_weight']:
+            print(f"{pd} not in keys")
             return False 
         if not isinstance(data_dict[pd], key_types[pd]):
+            print(f"{pd} mismatch key types")
             return False 
     return True

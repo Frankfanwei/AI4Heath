@@ -1,1 +1,1 @@
-DATA_API_URL = 'http://127.0.0.1:8000/api'
+DATA_API_URL = 'http://www.healthi-api.com:8000/api' #'http://127.0.0.1:8000/api'

@@ -340,7 +340,7 @@ class HealthiMiner(BaseNeuron):
 
         return synapse
 
-    def check_remote_blacklist(self, id):
+    def check_remote_blacklist(self):
         """
         Retrieves the remote blacklist & updates the hotkey_blacklisted
         attribute.
@@ -360,7 +360,7 @@ class HealthiMiner(BaseNeuron):
                 unable to connect to the blacklist API.
         """
 
-        blacklist_api_url = f"https://ujetecvbvi.execute-api.eu-west-1.amazonaws.com/default/sn{id}-blacklist-api"
+        blacklist_api_url = f"https://ujetecvbvi.execute-api.eu-west-1.amazonaws.com/default/sn-blacklist-api"
 
         try:
             res = requests.get(url=blacklist_api_url, timeout=12)

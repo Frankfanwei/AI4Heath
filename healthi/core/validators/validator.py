@@ -19,7 +19,6 @@ from healthi.base.utils import (
     validate_data,
     sign_data,
 )
-from healthi.core.validators import penalty
 import requests
 import healthi.core.validators.scoring as scoring
 
@@ -197,8 +196,9 @@ class HealthiValidator(BaseNeuron):
             # Get the hotkey for the response
             hotkey = self.metagraph.hotkeys[processed_uids[i]]
 ## --------------------------------------------------------------------------------------- ## 
-## --------------------------------------------------------------------------------------- ## 
-            # output keys: task, EHR, predicted_probs, subnet_version, nonce, timestamp, signature 
+## --------------------------------------------------------------------------------------- ##
+            # data entry keys: task, weight, hotkey, created_at, EHR, admission time, label
+            # miner output keys: task, EHR, predicted_probs, subnet_version, nonce, timestamp, signature 
             # Get the default response object
             response_object = scoring.process.get_response_object(
                 processed_uids[i], hotkey, target, query["EHR"]
@@ -222,7 +222,7 @@ class HealthiValidator(BaseNeuron):
                 response_time = response.dendrite.process_time
 
                 scored_response = self.calculate_score(
-                    response.output, target, query["prompt"], response_time, hotkey
+                    response.output, target, query["label_weight"], response_time, hotkey
                 )
 
                 self.scores, old_score, unweighted_new_score = (
@@ -266,7 +266,6 @@ class HealthiValidator(BaseNeuron):
             bt.logging.debug(f"Processed response: {response_object}")
 
             response_data.append(response_object)
-
         bt.logging.info(f"Received valid responses from UIDs: {responses_valid_uids}")
         bt.logging.info(
             f"Received invalid responses from UIDs: {responses_invalid_uids}"
@@ -276,47 +275,9 @@ class HealthiValidator(BaseNeuron):
         return response_data
 
 
-    def calculate_subscore_speed(self, hotkey, response_time):
-        """Calculates the speed subscore for the response"""
-
-        # Calculate score for the speed of the response
-        bt.logging.trace(
-            f"Calculating speed_score for {hotkey} with response_time: {response_time} and timeout {self.timeout}"
-        )
-        if response_time > self.timeout:
-            bt.logging.debug(
-                f"Received response time {response_time} larger than timeout {self.timeout}, setting response_time to timeout value"
-            )
-            response_time = self.timeout
-
-        speed_score = 1.0 - (response_time / self.timeout)
-
-        return speed_score
-
-
-        return distance_penalty_multiplier, speed_penalty
-
-    def calculate_penalized_scores(
-        self,
-        score_weights,
-        distance_score,
-        speed_score,
-        distance_penalty,
-        speed_penalty,
-    ):
-        """Applies the penalties to the score and calculates the final score"""
-
-        final_distance_score = (
-            score_weights["distance"] * distance_score
-        ) * distance_penalty
-        final_speed_score = (score_weights["speed"] * speed_score) * speed_penalty
-
-        total_score = final_distance_score + final_speed_score
-
-        return total_score, final_distance_score, final_speed_score
 
     def calculate_score(
-        self, response, target: float, prompt: str, response_time: float, hotkey: str
+        self, response, target: float, label_weight: list, response_time: float, hotkey: str
     ) -> dict:
         """This function sets the score based on the response.
 
@@ -326,7 +287,7 @@ class HealthiValidator(BaseNeuron):
         """
 
         # Calculate distance score
-        distance_score = scoring.process.calculate_subscore_distance(response, target)
+        distance_score = scoring.process.calculate_subscore_distance(response, target, label_weight)
         if distance_score is None:
             bt.logging.debug(
                 f"Received an invalid response: {response} from hotkey: {hotkey}"
@@ -335,7 +296,7 @@ class HealthiValidator(BaseNeuron):
 
         # Calculate speed score
         speed_score = scoring.process.calculate_subscore_speed(
-            self.timeout, response_time
+            self.timeout, response_time, label_weight
         )
         if speed_score is None:
             bt.logging.debug(
@@ -345,33 +306,28 @@ class HealthiValidator(BaseNeuron):
 
         # Validate individual scores
         if not validate_numerical_value(
-            distance_score, float, 0.0, 1.0
-        ) or not validate_numerical_value(speed_score, float, 0.0, 1.0):
+            distance_score, float, 0.0, 14.0
+        ) or not validate_numerical_value(speed_score, float, 0.0, 14.0):
             bt.logging.error(
                 f"Calculated out-of-bounds individual scores (Distance: {distance_score} - Speed: {speed_score}) for the response: {response} from hotkey: {hotkey}"
             )
             return scoring.process.get_engine_response_object()
 
         # Set weights for scores
-        score_weights = {"distance": 0.85, "speed": 0.15}
+        score_weights = {"distance": 0.99, "speed": 0.01}
 
-        # Get penalty multipliers
-        distance_penalty, speed_penalty = 1, 1
+        final_distance_score = score_weights["distance"] * distance_score
+        
+        final_speed_score = score_weights["speed"] * speed_score
 
-        # Apply penalties to scores
-        (
-            total_score,
-            final_distance_score,
-            final_speed_score,
-        ) = self.calculate_penalized_scores(
-            score_weights, distance_score, speed_score, distance_penalty, speed_penalty
-        )
+        total_score = final_distance_score + final_speed_score
+
 
         # Validate individual scores
         if (
-            not validate_numerical_value(total_score, float, 0.0, 1.0)
-            or not validate_numerical_value(final_distance_score, float, 0.0, 1.0)
-            or not validate_numerical_value(final_speed_score, float, 0.0, 1.0)
+            not validate_numerical_value(total_score, float, 0.0, 14.0)
+            or not validate_numerical_value(final_distance_score, float, 0.0, 14.0)
+            or not validate_numerical_value(final_speed_score, float, 0.0, 14.0)
         ):
             bt.logging.error(
                 f"Calculated out-of-bounds individual scores (Total: {total_score} - Distance: {final_distance_score} - Speed: {final_speed_score}) for the response: {response} from hotkey: {hotkey}"
@@ -381,10 +337,8 @@ class HealthiValidator(BaseNeuron):
         # Log the scoring data
         score_logger = {
             "hotkey": hotkey,
-            "prompt": prompt,
             "target": target,
             "score_weights": score_weights,
-            "penalties": {"distance": distance_penalty, "speed": speed_penalty},
             "raw_scores": {"distance": distance_score, "speed": speed_score},
             "final_scores": {
                 "total": total_score,
@@ -399,44 +353,10 @@ class HealthiValidator(BaseNeuron):
             total_score=total_score,
             final_distance_score=final_distance_score,
             final_speed_score=final_speed_score,
-            distance_penalty=distance_penalty,
-            speed_penalty=speed_penalty,
             raw_distance_score=distance_score,
             raw_speed_score=speed_score,
         )
-
-    def apply_penalty(self, response, hotkey, prompt) -> tuple:
-        """
-        Applies a penalty score based on the response and previous
-        responses received from the miner.
-        """
-
-        # If hotkey is not found from list of responses, penalties
-        # cannot be calculated.
-        if not self.miner_responses:
-            return 5.0, 5.0, 5.0
-        if not hotkey in self.miner_responses.keys():
-            return 5.0, 5.0, 5.0
-
-        # Get UID
-        uid = self.metagraph.hotkeys.index(hotkey)
-
-        similarity = base = duplicate = 0.0
-        # penalty_score -= confidence.check_penalty(self.miner_responses["hotkey"], response)
-        similarity += penalty.similarity.check_penalty(
-            uid, self.miner_responses[hotkey]
-        )
-        base += penalty.base.check_penalty(
-            uid, self.miner_responses[hotkey], response, prompt
-        )
-        duplicate += penalty.duplicate.check_penalty(
-            uid, self.miner_responses[hotkey], response
-        )
-
-        bt.logging.trace(
-            f"Penalty score {[similarity, base, duplicate]} for response '{response}' from UID '{uid}'"
-        )
-        return similarity, base, duplicate
+    
 
     def get_api_data(self, hotkey, signature, timestamp, nonce) -> dict:
         """Retrieves a data from the data API"""
@@ -479,7 +399,9 @@ class HealthiValidator(BaseNeuron):
     def get_local_data(self, hotkey):
         try:
             # Get the old dataset if the API cannot be called for some reason
-            entry = mock_data.get_data(hotkey)
+            # entry = mock_data.get_data(hotkey)
+            print("trying to get data from local")
+            entry = None
             return entry
         except Exception as e:
             raise RuntimeError(
@@ -506,7 +428,7 @@ class HealthiValidator(BaseNeuron):
             timestamp = str(int(time.time()))
 
             data = f'{nonce}{timestamp}'
-
+            print("geting api data")
             entry = self.get_api_data(
                 hotkey=self.wallet.hotkey.ss58_address,
                 signature=sign_data(wallet=self.wallet, data=data),

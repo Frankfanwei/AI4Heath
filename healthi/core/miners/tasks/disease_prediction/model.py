@@ -31,7 +31,7 @@ class DiseasePredictor:
         self.model = AutoModelForSequenceClassification.from_pretrained(self.model_name)
     
 
-    def inference(query, model, tokenizer):
+    def inference(self, query, model, tokenizer):
         inputs = tokenizer.encode_plus(query, return_token_type_ids=True, return_tensors="pt", max_length=512, truncation=True)
 
         with torch.no_grad():
@@ -48,8 +48,8 @@ class DiseasePredictor:
 
 
         # Execute Model Here
-        EHR = ' '.join([item for sublist in x for item in synapse.prompt])
-        output['predicted_probs'] = self.inference(EHR, self.model, self.tokenizer)
+        EHR = ' '.join([x for sublist in synapse.EHR for x in sublist])
+        output['predicted_probs'] = self.inference(EHR, self.model, self.tokenizer).tolist()
         
 
         # Add subnet version and UUID to the output

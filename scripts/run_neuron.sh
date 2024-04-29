@@ -142,7 +142,7 @@ generate_pm2_launch_file() {
     echo "Generating PM2 launch file"
     local cwd=$(pwd)
     local profile="${args['profile']}"
-    local neuron_script="${cwd}/ai4h/neurons/${profile}.py"
+    local neuron_script="${cwd}/healthi/neurons/${profile}.py"
     local interpreter="${VIRTUAL_ENV}/bin/python"
     local branch="${args['branch']}"
     local update_interval="${args['update_interval']}"
