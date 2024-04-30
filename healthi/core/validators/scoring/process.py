@@ -155,19 +155,13 @@ def validate_response(hotkey, response) -> bool:
         logging.trace(f"predicted_probs is not correct type: {response['predicted_probs']}")
         return False
 
-    # if not 0.0 <= float(response["confidence"]) <= 1.0:
-    #     logging.trace(
-    #         f"Confidence is out-of-bounds for response: {response['confidence']}"
-    #     )
-    #     return False
-
     # The response has passed the validation
     logging.trace(f"Validation succeeded for response: {response}")
     return True
 
 
 def assign_score_for_uid(
-    scores: Tensor, uid: int, alpha: float, response_score: float, sample_weight: float
+    scores: Tensor, uid: int, alpha: float, response_score: float, sample_weight: float, label_weight
 ):
     """Assigns a score to an UID
 
@@ -209,8 +203,9 @@ def assign_score_for_uid(
         )
 
     # Ensure the response score is correctly defined
+    maxmum_scores = np.sum(label_weight)
     if not utils.validate_numerical_value(
-        value=response_score, value_type=float, min_value=0.0, max_value=1.0
+        value=response_score, value_type=float, min_value=0.0, max_value=maxmum_scores
     ):
         logging.error(f"Value for response_score is incorrect: {response_score}")
         raise AttributeError(
@@ -225,12 +220,12 @@ def assign_score_for_uid(
     old_score = deepcopy(scores[uid])
 
     # Account for a rounding error by setting scores below threshold to 0.0
-    if scores[uid] < 0.000001:
-        scores[uid] = 0.0
+    # if scores[uid] < 0.000001:
+    #     scores[uid] = 0.0
 
     # And same for high values
-    if scores[uid] > 0.999999:
-        scores[uid] = 1.0
+    # if scores[uid] > 0.999999:
+    #     scores[uid] = 1.0
 
     # If current score is already at 0.0 we do not need to do anything
     if response_score == 0.0 and scores[uid] == 0.0:

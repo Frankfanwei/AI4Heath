@@ -8,6 +8,8 @@ from datetime import datetime
 from os import path, rename
 from pathlib import Path
 import torch
+import numpy as np
+from copy import deepcopy
 import secrets
 import time
 import bittensor as bt
@@ -190,13 +192,11 @@ class HealthiValidator(BaseNeuron):
         response_data = []
         responses_invalid_uids = []
         responses_valid_uids = []
-
+        last_time_scores = deepcopy(self.scores)
         # Check each response
         for i, response in enumerate(responses):
             # Get the hotkey for the response
             hotkey = self.metagraph.hotkeys[processed_uids[i]]
-## --------------------------------------------------------------------------------------- ## 
-## --------------------------------------------------------------------------------------- ##
             # data entry keys: task, weight, hotkey, created_at, EHR, admission time, label
             # miner output keys: task, EHR, predicted_probs, subnet_version, nonce, timestamp, signature 
             # Get the default response object
@@ -213,6 +213,7 @@ class HealthiValidator(BaseNeuron):
                         self.neuron_config.alpha,
                         0.0,
                         query["weight"],
+                        query["label_weight"]
                     )
                 )
                 responses_invalid_uids.append(processed_uids[i])
@@ -232,6 +233,7 @@ class HealthiValidator(BaseNeuron):
                         self.neuron_config.alpha,
                         scored_response["scores"]["total"],
                         query["weight"],
+                        query["label_weight"]
                     )
                 )
 
@@ -270,8 +272,20 @@ class HealthiValidator(BaseNeuron):
         bt.logging.info(
             f"Received invalid responses from UIDs: {responses_invalid_uids}"
         )
-## --------------------------------------------------------------------------------------- ## 
-## --------------------------------------------------------------------------------------- ## 
+
+        bt.logging.info(f"Rejusting scores based on rankings")
+        bt.logging.info(f"!Ranking Rejusting before scores:", self.scores)
+
+        diff_scores = deepcopy(self.scores) - last_time_scores
+        k = int(len(responses_valid_uids) * 0.2)
+        topkvalue, topkindex = torch.topk(diff_scores, k)
+        diff_scores = diff_scores * 0.2
+        diff_scores[topkindex] = diff_scores[topkindex] * 4
+
+        self.scores = last_time_scores + diff_scores
+        
+        bt.logging.info(f"!Ranking Rejusting after scores:", self.scores)
+
         return response_data
 
 
@@ -305,16 +319,17 @@ class HealthiValidator(BaseNeuron):
             speed_score = 0.0
 
         # Validate individual scores
+        maxmum_scores = np.sum(label_weight)
         if not validate_numerical_value(
-            distance_score, float, 0.0, 14.0
-        ) or not validate_numerical_value(speed_score, float, 0.0, 14.0):
+            distance_score, float, 0.0, maxmum_scores
+        ) or not validate_numerical_value(speed_score, float, 0.0, maxmum_scores):
             bt.logging.error(
                 f"Calculated out-of-bounds individual scores (Distance: {distance_score} - Speed: {speed_score}) for the response: {response} from hotkey: {hotkey}"
             )
             return scoring.process.get_engine_response_object()
 
         # Set weights for scores
-        score_weights = {"distance": 0.99, "speed": 0.01}
+        score_weights = {"distance": 0.98, "speed": 0.02}
 
         final_distance_score = score_weights["distance"] * distance_score
         
@@ -325,9 +340,9 @@ class HealthiValidator(BaseNeuron):
 
         # Validate individual scores
         if (
-            not validate_numerical_value(total_score, float, 0.0, 14.0)
-            or not validate_numerical_value(final_distance_score, float, 0.0, 14.0)
-            or not validate_numerical_value(final_speed_score, float, 0.0, 14.0)
+            not validate_numerical_value(total_score, float, 0.0, maxmum_scores)
+            or not validate_numerical_value(final_distance_score, float, 0.0, maxmum_scores)
+            or not validate_numerical_value(final_speed_score, float, 0.0, maxmum_scores)
         ):
             bt.logging.error(
                 f"Calculated out-of-bounds individual scores (Total: {total_score} - Distance: {final_distance_score} - Speed: {final_speed_score}) for the response: {response} from hotkey: {hotkey}"
