@@ -11,7 +11,7 @@ This repository requires python3.10 or higher and Ubuntu 22.04/Debian 12. It is 
 
 Installation:
 ```
-$ sudo apt update && sudo apt install jq npm python3.10-venv git && sudo npm install pm2 -g && pm2 update
+$ sudo apt update && sudo apt install jq npm python3.10-dev python3.10-venv git && sudo npm install pm2 -g && pm2 update
 $ git clone (add link later)
 $ cd healthi
 $ python3 -m venv .venv
