@@ -33,6 +33,9 @@ If you are not familiar with Bittensor, you should first perform the following a
 - [Generate a new hotkey under your new coldkey](https://docs.bittensor.com/getting-started/wallets#step-2-generate-a-hotkey)
 - [Register your new hotkey on our subnet 14](https://docs.bittensor.com/subnets/register-and-participate)
 
+## Computational requirements
+
+
 > [!NOTE]  
 > Validators need to establish an internet connection with the miner. This requires ensuring that the port specified in --axon.port is reachable on the virtual machine via the internet. This involves either opening the port on the firewall or configuring port forwarding.
 
