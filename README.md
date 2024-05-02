@@ -9,7 +9,7 @@
 </p>
 
 # Introduction
-This repository contains the source code for the Healthi subnet running on top of [Bittensor](https://github.com/opentensor/bittensor). The primary focus of this subnet is using AI models for predictive diagnostics based on electronic health records data.
+This repository contains the source code for the Healthi subnet running on top of [Bittensor](https://github.com/opentensor/bittensor). The primary objective of this subnet is to leverage AI models for predictive diagnostics using electronic health records data.
 
 ## Quickstart
 This repository requires Python 3.10 or higher and Ubuntu 22.04/Debian 12.
@@ -69,14 +69,14 @@ $ bash scripts/run_neuron.sh \
 --subtensor.network test
 ```
 
-Run auto-updater (only one instance needs to be running even if you have multiple PM2 instances active on the same machine):
+Auto-updater: We only recommend validators to run the auto-updater code as this might overwrite the codes modified by miners:
 ```
 $ cd healthi
 $ source .venv/bin/activate
 $ bash scripts/run_auto_updater.sh \
 --update_interval 300 \
 --branch main \
---pm2_instance_names llm-defender-subnet-validator-0 llm-defender-subnet-miner-0 \
+--pm2_instance_names healthi_validator \
 --prepare_miners True
 ```
 
@@ -86,7 +86,7 @@ $ bash scripts/run_auto_updater.sh \
   <summary>How does rewarding work?</summary>
   <br>
   <p>
-    Miners are rewarded for accurately predicting future health conditions based on the analysis of electronic health record (EHR) sequences, and the top 20% miner will have more rewards than others.
+    Miners are rewarded for their accurate predictions of future health conditions based on electronic health record (EHR) sequences analysis. The top 20% of miners receive significantly higher rewards than others.
   </p>
 </details>
 
@@ -94,13 +94,13 @@ $ bash scripts/run_auto_updater.sh \
   <summary>What is the expected data input and output as a miner?</summary>
   <br>
   <p>
-    As a miner, your input will consist of sequences of Electronic Health Records (EHR) encoded with International Statistical Classification of Diseases and Related Health Problems (ICD-10) codes. In the following example, the patient visited the hospital twice, was diagnosed with two new conditions each time of the visit.
+    As a miner, your input will consist of sequences of Electronic Health Records (EHR) encoded with International Statistical Classification of Diseases and Related Health Problems (ICD-10) codes. In the following example, the patient visited the hospital twice, receiving two diagnoses each time:
     <br><br>
     <strong>Example Input:</strong>
     <pre>
 [['D693', 'I10'], ['Z966', 'A047']]
     </pre>
-    Our currently proposed disease prediction task involves predicting the likelihood of the following 14 diseases for a patient within the next year. The output should be an array or list of probabilities, ordered specifically as follows:
+    Our current disease prediction task involves predicting the likelihood of the following 14 diseases within the next year. Outputs should be an array or list of probabilities in the order listed below:
     <ol>
       <li>Hypertension</li>
       <li>Diabetes</li>
@@ -136,7 +136,7 @@ $ bash scripts/run_auto_updater.sh \
   <summary>Data source and how do we prevent data exploitation?</summary>
   <br>
   <p>
-Our data is derived from authentic inpatient records, which are anonymized through the application of Generative Adversarial Networks (GANs). This approach preserves the integrity of the original data distributions while ensuring patient confidentiality. To prevent data exploitation and enhance security, our API continuously generates unique, synthetic EHR sequences for validators,  safeguarding against replay attacks.
+Our data originates from authentic inpatient records, which are anonymized using Generative Adversarial Networks (GANs) to preserve the original data distributions while ensuring patient confidentiality. To prevent data exploitation and enhance security, our API continuously generates unique, synthetic EHR sequences for validators, protecting against replay attacks.
   </p>
 </details>
 
@@ -144,7 +144,7 @@ Our data is derived from authentic inpatient records, which are anonymized throu
   <summary>How can I fine-tune my own model?</summary>
   <br>
   <p>
-  We provide fine-tuning data on [add later], miners are gather their own source of health data for fine-tuning.
+Fine-tuning data will be provided on [add later]. Additionally, we encourage miners to source their own health data for fine-tuning purposes.
   </p>
 </details>
 
