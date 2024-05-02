@@ -150,7 +150,7 @@ Our data originates from authentic inpatient records, which are anonymized using
   <summary>How can I fine-tune my model?</summary>
   <br>
   <p>
-    Fine-tuning data is provided at https://github.com/Healthi-Labs/healthi-subnet/blob/main/healthi/base/data/training.parquet. We also encourage miners to obtain EHR data from their own sources for fine-tuning.
+    Fine-tuning data is provided at https://github.com/Healthi-Labs/healthi-subnet/blob/main/healthi/base/data/trainset.parquet. We also encourage miners to obtain EHR data from their own sources for fine-tuning.
   </p>
 </details>
 

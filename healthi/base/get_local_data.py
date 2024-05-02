@@ -4,7 +4,7 @@ from datetime import datetime
 
 
 def get_local_data(hotkey):
-    DATA = pd.read_parquet('./healthi/base/data/final_data_0.parquet').rename(columns={'code': 'EHR','time': "admission_time"}, inplace=False)
+    DATA = pd.read_parquet('./healthi/base/data/trainset.parquet').rename(columns={'code': 'EHR','time': "admission_time"}, inplace=False)
     sampled_index = np.random.randint(low=0, high=len(DATA), size=1, dtype=int)[0]
     sampled_data = DATA.iloc[sampled_index]
     label = np.array(sampled_data['label'])
