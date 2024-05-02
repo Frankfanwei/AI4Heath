@@ -51,7 +51,7 @@ $ bash scripts/run_neuron.sh \
 --wallet.hotkey {hot_wallet_name} \
 --subtensor.network test \
 --validator_min_stake 20000 \
---axon.port 1234 
+--axon.port 12345 
 ```
 
 Run validator on testnet (if you run multiple validators, make sure the name is unique):
