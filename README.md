@@ -24,15 +24,15 @@ Installation (skip the first line if bittensor is already installed):
 ```
 $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/opentensor/bittensor/master/scripts/install.sh)"
 $ sudo apt update && sudo apt install jq npm python3.10-dev python3.10-venv git && sudo npm install pm2 -g && pm2 update
-$ git clone (add link later)
-$ cd healthi
+$ git clone https://github.com/Healthi-Labs/healthi-subnet.git
+$ cd healthi-subnet
 $ python3 -m venv .venv
 ```
 
 If you are not familiar with Bittensor, you should first perform the following activities:
 - [Generate a new coldkey](https://docs.bittensor.com/getting-started/wallets#step-1-generate-a-coldkey)
 - [Generate a new hotkey under your new coldkey](https://docs.bittensor.com/getting-started/wallets#step-2-generate-a-hotkey)
-- [Register your new hotkey on our subnet 14](https://docs.bittensor.com/subnets/register-and-participate)
+- [Register your new hotkey on our subnet](https://docs.bittensor.com/subnets/register-and-participate)
 
 # Subnet register
 
@@ -45,7 +45,7 @@ btcli subnet register --netuid 133 --wallet.name {cold_wallet_name} --wallet.hot
 
 Run miner (if you run multiple miners, make sure the name and axon.port are unique):
 ```
-$ cd healthi
+$ cd healthi-subnet
 $ source .venv/bin/activate
 $ bash scripts/run_neuron.sh \
 --name healthi_miner \
@@ -63,7 +63,7 @@ $ bash scripts/run_neuron.sh \
 
 Run validator on testnet (if you run multiple validators, make sure the name is unique):
 ```
-$ cd healthi
+$ cd healthi-subnet
 $ source .venv/bin/activate
 $ bash scripts/run_neuron.sh \
 --name healthi_validator \
@@ -78,7 +78,7 @@ $ bash scripts/run_neuron.sh \
 
 Auto-updater: We only recommend validators to run the auto-updater code as this might overwrite the codes modified by miners:
 ```
-$ cd healthi
+$ cd healthi-subnet
 $ source .venv/bin/activate
 $ bash scripts/run_auto_updater.sh \
 --update_interval 300 \
@@ -147,10 +147,11 @@ Our data originates from authentic inpatient records, which are anonymized using
 </details>
 
 <details>
-  <summary>How can I fine-tune my own model?</summary>
+  <summary>How can I fine-tune my model?</summary>
   <br>
   <p>
-Fine-tuning data will be provided on [add later]. Additionally, we encourage miners to source their own health data for fine-tuning purposes.
+    Fine-tuning data is provided at https://github.com/Healthi-Labs/healthi-subnet/blob/main/healthi/base/data/training.parquet. We also encourage miners to obtain EHR data from their own sources for fine-tuning.
   </p>
 </details>
+
 
