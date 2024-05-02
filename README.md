@@ -15,10 +15,12 @@
 # Introduction
 This repository contains the source code for the Healthi subnet running on top of [Bittensor](https://github.com/opentensor/bittensor). The primary objective of this subnet is to leverage AI models for predictive diagnostics using electronic health records data.
 
-## Quickstart
+In the rapidly evolving healthcare technology sector, the integration of Artificial Intelligence (AI) is revolutionizing preventive medicine, particularly through predictive diagnostics. The growing availability of patient data, especially Electronic Health Records (EHRs), offers a substantial opportunity to harness AI for predicting health outcomes. This subnet on the Bittensor network incentivizes miners based on the performance of their AI models in clinical prediction tasks assigned by the subnet validators, such as disease forecasting using EHRs. This network aims to employ these high-performing AI models developed by miners to improve patient outcomes, enhance healthcare delivery, and foster personalized clinical risk management.
+
+# Quickstart
 This repository requires Python 3.10 or higher and Ubuntu 22.04/Debian 12.
 
-Installation:
+Installation (skip the first line if bittensor is already installed):
 ```
 $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/opentensor/bittensor/master/scripts/install.sh)"
 $ sudo apt update && sudo apt install jq npm python3.10-dev python3.10-venv git && sudo npm install pm2 -g && pm2 update
@@ -32,7 +34,7 @@ If you are not familiar with Bittensor, you should first perform the following a
 - [Generate a new hotkey under your new coldkey](https://docs.bittensor.com/getting-started/wallets#step-2-generate-a-hotkey)
 - [Register your new hotkey on our subnet 14](https://docs.bittensor.com/subnets/register-and-participate)
 
-## Subnet register
+# Subnet register
 
 Testnet:
 ```
