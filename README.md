@@ -20,6 +20,7 @@ This repository requires Python 3.10 or higher and Ubuntu 22.04/Debian 12.
 
 Installation:
 ```
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/opentensor/bittensor/master/scripts/install.sh)"
 $ sudo apt update && sudo apt install jq npm python3.10-dev python3.10-venv git && sudo npm install pm2 -g && pm2 update
 $ git clone (add link later)
 $ cd healthi
