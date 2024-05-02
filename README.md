@@ -93,25 +93,33 @@ $ bash scripts/run_auto_updater.sh \
   <summary>What is the expected data input and output as a miner?</summary>
   <br>
   <p>
-As a miner, your input will consist of sequences from Electronic Health Records (EHR) encoded with International Statistical Classification of Diseases and Related Health Problems (ICD-10) codes.
-e.g., 
-The task involves predicting the likelihood of the following 14 diseases for each patient within the next year. The output should be an array or list of probabilities, ordered specifically as follows:
+    As a miner, your input will consist of sequences from Electronic Health Records (EHR) encoded with International Statistical Classification of Diseases and Related Health Problems (ICD-10) codes.
+    <br><br>
+    <strong>Example Input:</strong>
+    <pre>
+[['D693', 'I10'], ['Z966', 'I10', 'A047'], ['C259', 'K219', 'M199', 'I489', 'E785']]
+    </pre>
+    Your task involves predicting the likelihood of the following 14 diseases for each patient within the next year. The output should be an array or list of probabilities, ordered specifically as follows:
     <ol>
-        <li>Hypertension</li>
-        <li>Diabetes</li>
-        <li>Asthma</li>
-        <li>Chronic Obstructive Pulmonary Disease</li>
-        <li>Atrial Fibrillation</li>
-        <li>Coronary Heart Disease</li>
-        <li>Stroke</li>
-        <li>Anxiety and Depression</li>
-        <li>Dementia</li>
-        <li>Myocardial Infarction</li>
-        <li>Chronic Kidney Disease</li>
-        <li>Thyroid Disorder</li>
-        <li>Heart Failure</li>
-        <li>Cancer</li>
+      <li>Hypertension</li>
+      <li>Diabetes</li>
+      <li>Asthma</li>
+      <li>Chronic Obstructive Pulmonary Disease</li>
+      <li>Atrial Fibrillation</li>
+      <li>Coronary Heart Disease</li>
+      <li>Stroke</li>
+      <li>Anxiety and Depression</li>
+      <li>Dementia</li>
+      <li>Myocardial Infarction</li>
+      <li>Chronic Kidney Disease</li>
+      <li>Thyroid Disorder</li>
+      <li>Heart Failure</li>
+      <li>Cancer</li>
     </ol>
+    <strong>Example Output:</strong>
+    <pre>
+[0.0027342219837009907, 0.012263162061572075, 0.01795087940990925, 0.016055596992373466, 0.010267915204167366, 0.0002267731324536726, 0.02317667566239834, 0.39082783460617065, 0.017462262883782387, 0.033581722527742386, 0.014757075347006321, 0.03425902500748634, 0.015123098157346249, 0.028889883309602737]
+    </pre>
     These predictions help to prioritize interventions and manage care effectively by predicting potential health risks.
   </p>
 </details>
