@@ -163,7 +163,7 @@ cython_debug/
 
 # Subnet specifics ignores
 .local
-llm-defender*.config.js
+*.config.js
 .bittensor
 
 # Wandb
