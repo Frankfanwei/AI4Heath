@@ -100,7 +100,7 @@ The task involves predicting the likelihood of the following 14 diseases for eac
         <li>Hypertension</li>
         <li>Diabetes</li>
         <li>Asthma</li>
-        <li>Chronic Obstructive Pulmonary Disease (COPD)</li>
+        <li>Chronic Obstructive Pulmonary Disease</li>
         <li>Atrial Fibrillation</li>
         <li>Coronary Heart Disease</li>
         <li>Stroke</li>
@@ -110,6 +110,7 @@ The task involves predicting the likelihood of the following 14 diseases for eac
         <li>Chronic Kidney Disease</li>
         <li>Thyroid Disorder</li>
         <li>Heart Failure</li>
+        <li>Cancer</li>
     </ol>
     These predictions help to prioritize interventions and manage care effectively by predicting potential health risks.
   </p>
