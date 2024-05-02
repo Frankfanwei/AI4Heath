@@ -38,10 +38,10 @@ btcli subnet register --netuid 133 --wallet.name {cold_wallet_name} --wallet.hot
 
 Run miner (if you run multiple miners, make sure the name and axon.port are unique):
 ```
-$ cd llm-defender-subnet
+$ cd healthi
 $ source .venv/bin/activate
 $ bash scripts/run_neuron.sh \
---name test2-miner \
+--name healthi_miner \
 --install_only 0 \
 --max_memory_restart 10G \
 --branch main \
