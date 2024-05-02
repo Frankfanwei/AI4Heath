@@ -1,13 +1,18 @@
 <h1 align="center">Healthi Subnet</h1>
 
+<p align="center">
+  <a href="https://taoshi.io">Website</a>
+  ·
+  <a href="https://twitter.com/taoshiio">Twitter</a>
+    ·
+  <a href="https://huggingface.co/Healthi">HuggingFace</a>
+</p>
+
 # Introduction
 This repository contains the source code for the Healthi subnet running on top of [Bittensor](https://github.com/opentensor/bittensor). The primary focus of this subnet is using AI models for predictive diagnostics based on electronic health records data.
 
 ## Quickstart
-This repository requires python3.10 or higher and Ubuntu 22.04/Debian 12. It is highly recommended to spin up a fresh Ubuntu 22.04 or Debian 12 machine for running the subnet neurons. Upgrading from python3.8 to python3.10 on Ubuntu 20.04 is known to cause issues with the installation of the python modules required by the miners.
-
-> [!WARNING]  
-> We are recommending to use python virtual environment (venv) when running either the validator or miner. Make sure the virtual environment is active prior to launching the pm2 instance.
+This repository requires Python 3.10 or higher and Ubuntu 22.04/Debian 12.
 
 Installation:
 ```
@@ -16,10 +21,6 @@ $ git clone (add link later)
 $ cd healthi
 $ python3 -m venv .venv
 ```
-
-
-> [!NOTE]  
-> During installation you might get an error "The virtual environment was not created successfully because ensurepip is not available". In this case, install the python3.11-venv (or python3.10-venv) package following the instructions on screen. After this, re-execute the `python3 -m venv .venv` command.
 
 If you are not familiar with Bittensor, you should first perform the following activities:
 - [Generate a new coldkey](https://docs.bittensor.com/getting-started/wallets#step-1-generate-a-coldkey)
@@ -30,7 +31,7 @@ If you are not familiar with Bittensor, you should first perform the following a
 
 Testnet:
 ```
-btcli subnet register --netuid 133 --wallet.name {cold_wallet_name} --wallet.hotkey {hotkey_name} --subtensor.network test
+btcli subnet register --netuid 133 --wallet.name {cold_wallet_name} --wallet.hotkey {hot_wallet_name} --subtensor.network test
 ```
 > [!NOTE]  
 > Validators need to establish an internet connection with the miner. This requires ensuring that the port specified in --axon.port is reachable on the virtual machine via the internet. This involves either opening the port on the firewall or configuring port forwarding.
@@ -46,8 +47,8 @@ $ bash scripts/run_neuron.sh \
 --branch main \
 --netuid 133 \
 --profile miner \
---wallet.name {coldwallet_name} \
---wallet.hotkey {hotwallet_name} \
+--wallet.name {cold_wallet_name} \
+--wallet.hotkey {hot_wallet_name} \
 --subtensor.network test \
 --validator_min_stake 20000 \
 --axon.port 1234 
@@ -63,8 +64,8 @@ $ bash scripts/run_neuron.sh \
 --max_memory_restart 5G \
 --netuid 133 \
 --profile validator \
---wallet.name {coldwallet_name} \
---wallet.hotkey {hotwallet_name} \
+--wallet.name {cold_wallet_name} \
+--wallet.hotkey {hot_wallet_name} \
 --subtensor.network test
 ```
 
@@ -85,7 +86,7 @@ $ bash scripts/run_auto_updater.sh \
   <summary>How does rewarding work?</summary>
   <br>
   <p>
-    Miners are rewarded for accurately predicting future health conditions based on the analysis of electronic health record (EHR) sequences, and the top 20% miner will be rewarded more than others.
+    Miners are rewarded for accurately predicting future health conditions based on the analysis of electronic health record (EHR) sequences, and the top 20% miner will have more rewards than others.
   </p>
 </details>
 
@@ -93,13 +94,13 @@ $ bash scripts/run_auto_updater.sh \
   <summary>What is the expected data input and output as a miner?</summary>
   <br>
   <p>
-    As a miner, your input will consist of sequences from Electronic Health Records (EHR) encoded with International Statistical Classification of Diseases and Related Health Problems (ICD-10) codes.
+    As a miner, your input will consist of sequences of Electronic Health Records (EHR) encoded with International Statistical Classification of Diseases and Related Health Problems (ICD-10) codes. In the following example, the patient visited the hospital twice, was diagnosed with two new conditions each time of the visit.
     <br><br>
     <strong>Example Input:</strong>
     <pre>
-[['D693', 'I10'], ['Z966', 'I10', 'A047'], ['C259', 'K219', 'M199', 'I489', 'E785']]
+[['D693', 'I10'], ['Z966', 'A047']]
     </pre>
-    Your task involves predicting the likelihood of the following 14 diseases for each patient within the next year. The output should be an array or list of probabilities, ordered specifically as follows:
+    Our currently proposed disease prediction task involves predicting the likelihood of the following 14 diseases for a patient within the next year. The output should be an array or list of probabilities, ordered specifically as follows:
     <ol>
       <li>Hypertension</li>
       <li>Diabetes</li>
@@ -120,7 +121,6 @@ $ bash scripts/run_auto_updater.sh \
     <pre>
 [0.0027342219837009907, 0.012263162061572075, 0.01795087940990925, 0.016055596992373466, 0.010267915204167366, 0.0002267731324536726, 0.02317667566239834, 0.39082783460617065, 0.017462262883782387, 0.033581722527742386, 0.014757075347006321, 0.03425902500748634, 0.015123098157346249, 0.028889883309602737]
     </pre>
-    These predictions help to prioritize interventions and manage care effectively by predicting potential health risks.
   </p>
 </details>
 
@@ -141,25 +141,10 @@ Our data is derived from authentic inpatient records, which are anonymized throu
 </details>
 
 <details>
-  <summary>Can I be a miner with little knowledge?</summary>
+  <summary>How can I fine-tune my own model?</summary>
   <br>
   <p>
-    Predicting on markets is very hard, but we want to help those who want to contribute to the network by providing models that can be used. These models can be used to build upon, or just run yourself to try and compete.
-
-    You can participate by running these pre-built & pre-trained models provided to all miners [here](https://huggingface.co/Taoshi/model_v4).
-
-    These model are already built into the core logic of `neurons/miner.py` for you to run and compete as a miner. All you need to do is run `neurons/miner.py` and specify the model you want to run as an argument through --base_model:
-    --base_model model_v4_1
-
-  </p>
-
-</details>
-
-<details>
-  <summary>How can I fine-tune my own model.</summary>
-  <br>
-  <p>
-  We provide fine-tuning data , miners are encouraged to use their 
+  We provide fine-tuning data on [add later], miners are gather their own source of health data for fine-tuning.
   </p>
 </details>
 
