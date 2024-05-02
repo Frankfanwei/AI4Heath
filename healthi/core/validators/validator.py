@@ -41,7 +41,6 @@ class HealthiValidator(BaseNeuron):
     def __init__(self, parser: ArgumentParser):
         super().__init__(parser=parser, profile="validator")
 
-        self.max_engines = 3
         self.timeout = 12
         self.neuron_config = None
         self.wallet = None
@@ -679,34 +678,7 @@ class HealthiValidator(BaseNeuron):
     def _get_remote_miner_blacklist(self) -> list:
         """Retrieves the remote blacklist"""
 
-        bt.logging.info(f'Not adding blacklist in the current version.')
-
-        # blacklist_api_url = "http://healthi-api.com"
-        # try:
-        #     res = requests.get(url=blacklist_api_url, timeout=12)
-        #     if res.status_code == 200:
-        #         miner_blacklist = res.json()
-        #         if validate_miner_blacklist(miner_blacklist):
-        #             bt.logging.trace(
-        #                 f"Loaded remote miner blacklist: {miner_blacklist}"
-        #             )
-        #             return miner_blacklist
-        #         bt.logging.trace(
-        #             f"Remote miner blacklist was formatted incorrectly or was empty: {miner_blacklist}"
-        #         )
-
-        #     else:
-        #         bt.logging.warning(
-        #             f"Miner blacklist API returned unexpected status code: {res.status_code}"
-        #         )
-        # except requests.exceptions.ReadTimeout as e:
-        #     bt.logging.error(f"Request timed out: {e}")
-        # except requests.exceptions.JSONDecodeError as e:
-        #     bt.logging.error(f"Unable to read the response from the API: {e}")
-        # except requests.exceptions.ConnectionError as e:
-        #     bt.logging.error(f"Unable to connect to the blacklist API: {e}")
-        # except Exception as e:
-        #     bt.logging.error(f'Generic error during request: {e}')
+        bt.logging.info(f'Not adding blacklist miner in the current version.')
 
         return []
 

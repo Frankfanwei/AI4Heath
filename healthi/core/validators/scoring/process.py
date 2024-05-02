@@ -69,9 +69,6 @@ def calculate_subscore_distance(response, target, label_weight) -> float:
     return np.sum(distance_score)
     
 
-
-
-
 def calculate_subscore_speed(timeout, response_time, label_weight):
     """Calculates the speed subscore for the response"""
 
@@ -218,14 +215,6 @@ def assign_score_for_uid(
         raise AttributeError(f"UID must be in range (0, 255). Value: {uid}")
 
     old_score = deepcopy(scores[uid])
-
-    # Account for a rounding error by setting scores below threshold to 0.0
-    # if scores[uid] < 0.000001:
-    #     scores[uid] = 0.0
-
-    # And same for high values
-    # if scores[uid] > 0.999999:
-    #     scores[uid] = 1.0
 
     # If current score is already at 0.0 we do not need to do anything
     if response_score == 0.0 and scores[uid] == 0.0:

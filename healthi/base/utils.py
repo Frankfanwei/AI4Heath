@@ -8,6 +8,19 @@ import bittensor as bt
 import numpy as np
 
 def is_list_or_array(value):
+    """Validates that a given value is a specific list or np array
+
+    Arguments:
+        value
+            Value to validate
+    
+    Returns:
+        result
+            A bool depicting the outcome of the validation of certain 
+            value format
+    
+    """
+
     if isinstance(value, list) and all(isinstance(x, float) for x in value):
         return 1
     elif isinstance(value, np.ndarray) and value.dtype.kind in 'f':
@@ -320,17 +333,17 @@ def validate_data(data_dict):
     }
     # run checks
     if not isinstance(data_dict, dict):
-        bt.logging.info("Validate data failed with error as data not dict!")
+        bt.logging.info("Validate data failed with error as data not dict.")
         return False
     if len([pd for pd in data_dict]) != 8:
         keys = [pd for pd in data_dict]
-        bt.logging.info(f"Validate data failed, with data keys error as {keys}")
+        bt.logging.info(f"Validate data failed, with data keys error as {keys}.")
         return False
     for pd in data_dict:
         if pd not in ['task', 'weight', 'hotkey', 'created_at', 'EHR', 'admission_time', 'label', 'label_weight']:
-            bt.logging.info(f"{pd} not in keys")
+            bt.logging.info(f"Validate data failed, {pd} not in keys")
             return False 
         if not isinstance(data_dict[pd], key_types[pd]):
-            bt.logging.info(f"{pd} mismatch key types")
+            bt.logging.info(f"Validate data failed, {pd} mismatch key types")
             return False 
     return True
