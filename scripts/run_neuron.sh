@@ -77,28 +77,28 @@ parse_arguments() {
     done
 }
 
-# pull_repo_and_checkout_branch() {
-#     local branch="${args['branch']}"
+pull_repo_and_checkout_branch() {
+    local branch="${args['branch']}"
 
-#     # Pull the latest repository
-#     git pull --all
+    # Pull the latest repository
+    git pull --all
 
-#     # Change to the specified branch if provided
-#     if [[ -n "$branch" ]]; then
-#         echo "Switching to branch: $branch"
-#         git checkout "$branch" || { echo "Branch '$branch' does not exist."; exit 1; }
-#     fi
+    # Change to the specified branch if provided
+    if [[ -n "$branch" ]]; then
+        echo "Switching to branch: $branch"
+        git checkout "$branch" || { echo "Branch '$branch' does not exist."; exit 1; }
+    fi
 
-#     local current_branch=$(git symbolic-ref --short HEAD)
-#     git fetch &>/dev/null  # Silence output from fetch command
-#     if ! git rev-parse --quiet --verify "origin/$current_branch" >/dev/null; then
-#         echo "You are using a branch that does not exists in remote. Make sure your local branch is up-to-date with the latest version in the main branch. Auto-updater will not be enabled."
-#     fi
-# }
+    local current_branch=$(git symbolic-ref --short HEAD)
+    git fetch &>/dev/null  # Silence output from fetch command
+    if ! git rev-parse --quiet --verify "origin/$current_branch" >/dev/null; then
+        echo "You are using a branch that does not exists in remote. Make sure your local branch is up-to-date with the latest version in the main branch. Auto-updater will not be enabled."
+    fi
+}
 
 install_packages() {
     local cfg_version=$(grep -oP 'version\s*=\s*\K[^ ]+' setup.cfg)
-    #local installed_version=$(pip show llm-defender | grep -oP 'Version:\s*\K[^ ]+')
+    local installed_version=$(pip show healthi | grep -oP 'Version:\s*\K[^ ]+')
     local profile="${args['profile']}"
 
     # Load dotenv configuration
