@@ -1,9 +1,9 @@
 <h1 align="center">Healthi Subnet</h1>
 
 <p align="center">
-  <a href="https://taoshi.io">Website</a>
+  <a href="">Website</a>
   ·
-  <a href="https://twitter.com/taoshiio">Twitter</a>
+  <a href="">Twitter</a>
     ·
   <a href="https://huggingface.co/Healthi">HuggingFace</a>
     .
