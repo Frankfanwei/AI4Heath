@@ -133,7 +133,7 @@ $ bash scripts/run_auto_updater.sh \
   <summary>Compute Requirements</summary>
   <br>
   <p>
-  The computational requirements for participating as a miner or validator in our network are minimal. Our system does not require GPU capabilities, and it runs effectively on a virtual private server (VPS) configured with 4 virtual CPUs and 24 GB RAM. While miners are free to utilize GPU resources, the key to achieving higher rewards within our subnet lies in developing superior predictive models rather than relying on computational power.
+  The computational requirements for participating as a miner or validator in our network are minimal. Our system does not require GPU capabilities, and it runs effectively on a virtual private server (VPS) configured with 4 virtual CPUs and 24 GB RAM. While miners are free to utilize GPU resources, the key to achieving higher rewards within our subnet lies in developing superior predictive models rather than having more computational power.
   </p>
 </details>
 
