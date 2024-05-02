@@ -81,8 +81,7 @@ $ source .venv/bin/activate
 $ bash scripts/run_auto_updater.sh \
 --update_interval 300 \
 --branch main \
---pm2_instance_names healthi_validator \
---prepare_miners True
+--pm2_instance_names healthi_validator
 ```
 
 <h1 id="FAQ">FAQ</h1>
