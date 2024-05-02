@@ -6,6 +6,10 @@
   <a href="https://twitter.com/taoshiio">Twitter</a>
     ·
   <a href="https://huggingface.co/Healthi">HuggingFace</a>
+    .
+  <a href="#FAQ">FAQ</a>
+
+  ·  
 </p>
 
 # Introduction
@@ -80,7 +84,7 @@ $ bash scripts/run_auto_updater.sh \
 --prepare_miners True
 ```
 
-# FAQ
+<h1 id="FAQ">FAQ</h1>
 
 <details>
   <summary>How does rewarding work?</summary>
