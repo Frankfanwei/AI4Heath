@@ -13,9 +13,9 @@
 </p>
 
 # Introduction
-This repository contains the source code for the Healthi subnet running on top of [Bittensor](https://github.com/opentensor/bittensor). The primary objective of this subnet is to leverage AI models for predictive diagnostics using electronic health records data.
+This repository contains the source code for the Healthi subnet running on top of [Bittensor](https://github.com/opentensor/bittensor). The primary objective of this subnet is to leverage AI models for predictive diagnostics using electronic health records (EHRs).
 
-In the rapidly evolving healthcare technology sector, the integration of Artificial Intelligence (AI) is revolutionizing preventive medicine, particularly through predictive diagnostics. The growing availability of patient data, especially Electronic Health Records (EHRs), offers a substantial opportunity to harness AI for predicting health outcomes. This subnet on the Bittensor network incentivizes miners based on the performance of their AI models in clinical prediction tasks assigned by the subnet validators, such as disease forecasting using EHRs. This network aims to employ these high-performing AI models developed by miners to improve patient outcomes, enhance healthcare delivery, and foster personalized clinical risk management.
+In the rapidly evolving healthcare technology sector, the integration of Artificial Intelligence (AI) is revolutionizing preventive medicine, particularly through predictive diagnostics. The growing availability of patient data, especially EHRs, offers a substantial opportunity to harness AI for predicting health outcomes. This subnet on the Bittensor network incentivizes miners based on the performance of their AI models in clinical prediction tasks assigned by the subnet validators, such as disease forecasting using EHRs. This network aims to employ these high-performing AI models developed by miners to improve patient outcomes, enhance healthcare delivery, and foster personalized clinical risk management.
 
 # Quickstart
 This repository requires Python 3.10 or higher and Ubuntu 22.04/Debian 12.
