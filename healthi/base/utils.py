@@ -320,16 +320,17 @@ def validate_data(data_dict):
     }
     # run checks
     if not isinstance(data_dict, dict):
-        print("data not dict!")
+        bt.logging.info("Validate data failed with error as data not dict!")
         return False
     if len([pd for pd in data_dict]) != 8:
-        print("data not 8!")
+        keys = [pd for pd in data_dict]
+        bt.logging.info(f"Validate data failed, with data keys error as {keys}")
         return False
     for pd in data_dict:
         if pd not in ['task', 'weight', 'hotkey', 'created_at', 'EHR', 'admission_time', 'label', 'label_weight']:
-            print(f"{pd} not in keys")
+            bt.logging.info(f"{pd} not in keys")
             return False 
         if not isinstance(data_dict[pd], key_types[pd]):
-            print(f"{pd} mismatch key types")
+            bt.logging.info(f"{pd} mismatch key types")
             return False 
     return True

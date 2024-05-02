@@ -36,18 +36,18 @@ parse_arguments() {
 generate_pm2_launch_file_and_launch() {
     echo "Generating PM2 launch file"
     local cwd=$(pwd)
-    local neuron_script="${cwd}/llm_defender/neurons/${profile}.py"
+    local neuron_script="${cwd}/healthi/neurons/${profile}.py"
     local interpreter="${VIRTUAL_ENV}/bin/python"
     local branch="${args['branch']}"
     local update_interval="${args['update_interval']}"
     local pm2_instance_names="${args['pm2_instance_names']}"
     local prepare_miners="${args['prepare_miners']}"
     
-    cat <<EOF > llm-defender-auto-updater.config.js
+    cat <<EOF > healthi-auto-updater.config.js
 module.exports = {
     apps: [
         {
-            "name"                  : "llm-defender-auto-updater",
+            "name"                  : "healthi-auto-updater",
             "script"                : "${cwd}/scripts/auto_updater.py",
             "interpreter"           : "${interpreter}",
             "args"                  : "--branch ${branch} --pm2_instance_names ${pm2_instance_names} --update_interval ${update_interval} --prepare_miners ${prepare_miners}"
@@ -56,7 +56,7 @@ module.exports = {
 }
 EOF
     echo "Starting PM2 process"
-    eval "pm2 start llm-defender-auto-updater.config.js"
+    eval "pm2 start healthi-auto-updater.config.js"
 }
 
 echo "### START OF EXECUTION ###"

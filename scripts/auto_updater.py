@@ -75,39 +75,21 @@ def run(args):
                 )
 
                 if args.no_miner:
-                    if args.wandb:
-                        logger.info(
-                            "Installing the new subnet version with validator and wandb extras"
-                        )
-                        subprocess.run(
-                            "pip install -e .[wandb,validator]", check=True, shell=True
-                        )
-                    else:
-                        logger.info(
-                            "Installing the new subnet version with validator extras"
-                        )
-                        subprocess.run(
-                            "pip install -e .[validator]", check=True, shell=True
-                        )
+                    logger.info(
+                        "Installing the new subnet version with validator extras"
+                    )
+                    subprocess.run(
+                        "pip install -e .[validator]", check=True, shell=True
+                    )
                 elif args.no_validator:
-                    if args.wandb:
-                        logger.info(
-                            "Installing the new subnet version with miner and wandb extras"
-                        )
-                        subprocess.run(
-                            "pip install -e .[wandb,miner] && pip uninstall -y uvloop",
-                            check=True,
-                            shell=True,
-                        )
-                    else:
-                        logger.info(
-                            "Installing the new subnet version with miner extras"
-                        )
-                        subprocess.run(
-                            "pip install -e .[miner] && pip uninstall -y uvloop",
-                            check=True,
-                            shell=True,
-                        )
+                    logger.info(
+                        "Installing the new subnet version with miner extras"
+                    )
+                    subprocess.run(
+                        "pip install -e .[miner] && pip uninstall -y uvloop",
+                        check=True,
+                        shell=True,
+                    )
                 else:
                     logger.info(
                         "Installing the new subnet version with miner and validator extras"
@@ -159,7 +141,7 @@ if __name__ == "__main__":
     parser = ArgumentParser()
 
     cwd = Path.cwd()
-    repo_name = "llm-defender-subnet"
+    repo_name = "healthi-subnet"
 
     if cwd.parts[-1] == repo_name:
         parser.add_argument(
@@ -190,17 +172,12 @@ if __name__ == "__main__":
             action="store_true",
             help="This flag must be set if miner is not running on the machine",
         )
-        parser.add_argument(
-            "--wandb",
-            action="store_true",
-            help="This flag must be set if wandb is enabled on the machine",
-        )
 
         args = parser.parse_args()
         run(args)
     else:
         logger.error(
-            "Invalid current working directory. You must be in the root of the llm-defender-subnet git repository to run this script. Path: %s",
+            "Invalid current working directory. You must be in the root of the healthi-subnet git repository to run this script. Path: %s",
             cwd,
         )
         raise RuntimeError(

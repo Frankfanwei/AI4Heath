@@ -416,9 +416,9 @@ class HealthiValidator(BaseNeuron):
         try:
             # Get the old dataset if the API cannot be called for some reason
             # entry = mock_data.get_data(hotkey)
-            print("trying to get data from local")
+            bt.logging.info("trying to get data from local")
             entry = get_local_data(hotkey)
-            return entry
+            return eval(entry)
         except Exception as e:
             raise RuntimeError(
                 f"Unable to retrieve a data from the API and from local database: {e}"
@@ -679,33 +679,34 @@ class HealthiValidator(BaseNeuron):
     def _get_remote_miner_blacklist(self) -> list:
         """Retrieves the remote blacklist"""
 
-        blacklist_api_url = ""
+        bt.logging.info(f'Not adding blacklist in the current version.')
 
-        try:
-            res = requests.get(url=blacklist_api_url, timeout=12)
-            if res.status_code == 200:
-                miner_blacklist = res.json()
-                if validate_miner_blacklist(miner_blacklist):
-                    bt.logging.trace(
-                        f"Loaded remote miner blacklist: {miner_blacklist}"
-                    )
-                    return miner_blacklist
-                bt.logging.trace(
-                    f"Remote miner blacklist was formatted incorrectly or was empty: {miner_blacklist}"
-                )
+        # blacklist_api_url = "http://healthi-api.com"
+        # try:
+        #     res = requests.get(url=blacklist_api_url, timeout=12)
+        #     if res.status_code == 200:
+        #         miner_blacklist = res.json()
+        #         if validate_miner_blacklist(miner_blacklist):
+        #             bt.logging.trace(
+        #                 f"Loaded remote miner blacklist: {miner_blacklist}"
+        #             )
+        #             return miner_blacklist
+        #         bt.logging.trace(
+        #             f"Remote miner blacklist was formatted incorrectly or was empty: {miner_blacklist}"
+        #         )
 
-            else:
-                bt.logging.warning(
-                    f"Miner blacklist API returned unexpected status code: {res.status_code}"
-                )
-        except requests.exceptions.ReadTimeout as e:
-            bt.logging.error(f"Request timed out: {e}")
-        except requests.exceptions.JSONDecodeError as e:
-            bt.logging.error(f"Unable to read the response from the API: {e}")
-        except requests.exceptions.ConnectionError as e:
-            bt.logging.error(f"Unable to connect to the blacklist API: {e}")
-        except Exception as e:
-            bt.logging.error(f'Generic error during request: {e}')
+        #     else:
+        #         bt.logging.warning(
+        #             f"Miner blacklist API returned unexpected status code: {res.status_code}"
+        #         )
+        # except requests.exceptions.ReadTimeout as e:
+        #     bt.logging.error(f"Request timed out: {e}")
+        # except requests.exceptions.JSONDecodeError as e:
+        #     bt.logging.error(f"Unable to read the response from the API: {e}")
+        # except requests.exceptions.ConnectionError as e:
+        #     bt.logging.error(f"Unable to connect to the blacklist API: {e}")
+        # except Exception as e:
+        #     bt.logging.error(f'Generic error during request: {e}')
 
         return []
 

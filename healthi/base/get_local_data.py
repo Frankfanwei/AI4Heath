@@ -17,5 +17,5 @@ def get_local_data(hotkey):
     sampled_data['hotkey'] = hotkey
     sampled_data['task'] = 'Disease Prediction'
     return_data = sampled_data.to_json()
-    return return_data 
+    return return_data
 
