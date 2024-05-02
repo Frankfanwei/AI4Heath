@@ -14,6 +14,7 @@ import secrets
 import time
 import bittensor as bt
 from healthi.base.neuron import BaseNeuron
+from healthi.base.get_local_data import get_local_data
 from healthi.base.utils import (
     timeout_decorator,
     validate_miner_blacklist,
@@ -416,7 +417,7 @@ class HealthiValidator(BaseNeuron):
             # Get the old dataset if the API cannot be called for some reason
             # entry = mock_data.get_data(hotkey)
             print("trying to get data from local")
-            entry = None
+            entry = get_local_data(hotkey)
             return entry
         except Exception as e:
             raise RuntimeError(
@@ -678,7 +679,7 @@ class HealthiValidator(BaseNeuron):
     def _get_remote_miner_blacklist(self) -> list:
         """Retrieves the remote blacklist"""
 
-        blacklist_api_url = "https://ujetecvbvi.execute-api.eu-west-1.amazonaws.com/default/sn14-blacklist-api"
+        blacklist_api_url = ""
 
         try:
             res = requests.get(url=blacklist_api_url, timeout=12)

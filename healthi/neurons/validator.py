@@ -107,13 +107,13 @@ def main(validator: HealthiValidator):
             )
 
             # Process blacklisted UIDs (set scores to 0)
-            # for uid in blacklisted_uids:
-            #     bt.logging.debug(f'Setting score for blacklisted UID: {uid}. Old score: {validator.scores[uid]}')
-            #     validator.scores[uid] = (
-            #         validator.neuron_config.alpha * validator.scores[uid]
-            #         + (1 - validator.neuron_config.alpha) * 0.0
-            #     )
-            #     bt.logging.debug(f'Set score for blacklisted UID: {uid}. New score: {validator.scores[uid]}')
+            for uid in blacklisted_uids:
+                bt.logging.debug(f'Setting score for blacklisted UID: {uid}. Old score: {validator.scores[uid]}')
+                validator.scores[uid] = (
+                    validator.neuron_config.alpha * validator.scores[uid]
+                    + (1 - validator.neuron_config.alpha) * 0.0
+                )
+                bt.logging.debug(f'Set score for blacklisted UID: {uid}. New score: {validator.scores[uid]}')
 
             # Process UIDs we did not query (set scores to 0)
             for uid in uids_not_to_query:
