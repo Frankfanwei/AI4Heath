@@ -219,12 +219,14 @@ EOF
 
 generate_pm2_auto_update_config() {
     local cwd=$(pwd)
+    local name="${args['name']}"
     cat <<EOF > auto_update.config.js
 module.exports = {
     apps : [{
         name   : "auto-updater",
         script : "${cwd}/scripts/auto_update.sh",
-        interpreter: "/bin/bash"
+        interpreter : "/bin/bash"
+        instance_name : "${args['name']}"
     }]
 }
 EOF
