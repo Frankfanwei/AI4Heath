@@ -217,9 +217,26 @@ module.exports = {
 EOF
 }
 
+generate_pm2_auto_update_config() {
+    local cwd=$(pwd)
+    cat <<EOF > auto_update.config.js
+module.exports = {
+    apps : [{
+        name   : "auto-updater",
+        script : "${cwd}/scripts/auto_update.sh",
+        interpreter: "/bin/bash"
+    }]
+}
+EOF
+}
+
 launch_pm2_instance() {
     local name="${args['name']}"
     eval "pm2 start ${name}.config.js"
+}
+
+launch_pm2_auto_update() {
+    pm2 start auto_update.config.js
 }
 
 echo "### START OF EXECUTION ###"
@@ -239,10 +256,6 @@ install_packages
 echo "Installation done. Sleeping 2 seconds."
 sleep 2
 
-if [[ "$profile" == "miner" ]]; then
-    run_preparation
-    echo "Preparation done. Sleeping 2 seconds."
-fi
 
 if [[ "$install_only" == 1 ]]; then
     echo "Installation done. PM2 ecosystem files not created and PM2 instance was not launched as install_only is set to True."
@@ -251,4 +264,12 @@ else
     generate_pm2_launch_file
     echo "Launching PM instance"
     launch_pm2_instance
+fi
+
+if [[ "$profile" == "validator" ]]; then
+    generate_pm2_auto_update_config
+    echo "Generating PM2 auto-update file"
+    sleep 2
+    launch_pm2_auto_update
+    echo "Lanuching auto-updater."
 fi
