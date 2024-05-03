@@ -46,7 +46,7 @@ Run miner (if you run multiple miners, make sure the name and axon.port are uniq
 ```
 $ cd healthi-subnet
 $ source .venv/bin/activate
-$ bash scripts/run_neuron.sh \
+$ bash scripts/run.sh \
 --name healthi_miner \
 --install_only 0 \
 --max_memory_restart 10G \
@@ -64,7 +64,7 @@ Run validator on testnet (validator updates automatically):
 ```
 $ cd healthi-subnet
 $ source .venv/bin/activate
-$ bash scripts/run_neuron.sh \
+$ bash scripts/run.sh \
 --name healthi_validator \
 --install_only 0 \
 --max_memory_restart 5G \
