@@ -17,8 +17,8 @@ while true; do
         pip install -e .[validator]
 
         echo "Restarting PM2 process..."
-        pm2 restart ${args[instance_name]}
-        echo "PM2 process ${args[instance_name]} has been restarted."
+        pm2 restart ${args[instance]}
+        echo "PM2 process ${args[instance]} has been restarted."
     else
         echo "No updates found. Checking again in 10 minutes..."
     fi

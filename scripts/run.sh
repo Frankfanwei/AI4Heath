@@ -225,8 +225,8 @@ module.exports = {
     apps : [{
         name   : "auto-updater",
         script : "${cwd}/scripts/auto_update.sh",
-        interpreter : "/bin/bash"
-        instance_name : "${args['name']}"
+        interpreter : "/bin/bash",
+        instance : "${args['name']}"
     }]
 }
 EOF
