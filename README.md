@@ -13,14 +13,14 @@
 </p>
 
 # Introduction
-This repository contains the source code for the Healthi subnet running on top of [Bittensor](https://github.com/opentensor/bittensor). The primary objective of this subnet is to leverage AI models for predictive diagnostics using electronic health records (EHRs).
+This repository hosts the source code for the Healthi subnet, which operates atop the Bittensor network. The primary goal of this subnet is to utilize AI models for predictive diagnostics based on electronic health records (EHRs).
 
-In the rapidly evolving healthcare technology sector, the integration of Artificial Intelligence (AI) is revolutionizing preventive medicine, particularly through predictive diagnostics. The growing availability of patient data, especially EHRs, offers a substantial opportunity to harness AI for predicting health outcomes. This subnet on the Bittensor network incentivizes miners based on the performance of their AI models in clinical prediction tasks assigned by the subnet validators, such as disease forecasting using EHRs. This network aims to employ these high-performing AI models developed by miners to improve patient outcomes, enhance healthcare delivery, and foster personalized clinical risk management.
+In the rapidly advancing field of healthcare technology, AI integration is transforming preventive medicine, particularly through predictive diagnostics. The increasing availability of patient data, especially EHRs, presents a significant opportunity to leverage AI for predicting health outcomes. This subnet on the Bittensor network rewards miners based on their AI models' performance in clinical prediction tasks, such as disease forecasting using EHRs. Our network aims to utilize these high-performing AI models developed by miners to improve patient outcomes, enhance healthcare delivery, and promote personalized clinical risk management.
 
 # Quickstart
 This repository requires Python 3.10 or higher and Ubuntu 22.04/Debian 12.
 
-Installation (skip the first line if bittensor is already installed):
+Installation (omit the first line if Bittensor is already installed):
 ```
 $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/opentensor/bittensor/master/scripts/install.sh)"
 $ sudo apt update && sudo apt install jq npm python3.10-dev python3.10-venv git && sudo npm install pm2 -g && pm2 update
@@ -93,7 +93,7 @@ $ bash scripts/run_auto_updater.sh \
   <summary>How does rewarding work?</summary>
   <br>
   <p>
-    Miners are rewarded for their accurate predictions of future health conditions based on electronic health record (EHR) sequences analysis. The top 20% of miners receive significantly higher rewards than others.
+    Miners are rewarded based on the accuracy of their predictions for future health conditions derived from analyses of electronic health record (EHR) sequences. The top 20% of miners receive significantly higher rewards than the rest.
   </p>
 </details>
 
@@ -107,7 +107,7 @@ $ bash scripts/run_auto_updater.sh \
     <pre>
 [['D693', 'I10'], ['Z966', 'A047']]
     </pre>
-    Our current disease prediction task involves predicting the likelihood of the following 14 diseases within the next year. Outputs should be an array or list of probabilities in the order listed below:
+    The current disease prediction task involves estimating the likelihood of getting the following 14 diseases within one year. Outputs should be an array or list of probabilities in the order listed below:
     <ol>
       <li>Hypertension</li>
       <li>Diabetes</li>
@@ -135,7 +135,7 @@ $ bash scripts/run_auto_updater.sh \
   <summary>Compute Requirements</summary>
   <br>
   <p>
-  The computational requirements for participating as a miner or validator in our network are minimal. Our system does not require GPU capabilities, and it runs effectively on a virtual private server (VPS) configured with 4 virtual CPUs and 24 GB RAM. While miners are free to utilize GPU resources, the key to achieving higher rewards within our subnet lies in developing superior predictive models rather than having more computational power.
+  The computational requirements for participating as a miner or validator in our subnet are minimal. Our subnet does not necessitate GPU capabilities and runs effectively on a virtual private server (VPS) with 4 virtual CPUs and 16 GB RAM. Although miners are permitted to use GPU resources, achieving higher rewards within our subnet depends more on developing superior predictive models than on computational power.
   </p>
 </details>
 
@@ -148,11 +148,17 @@ Our data originates from authentic inpatient records, which are anonymized using
 </details>
 
 <details>
-  <summary>How can I fine-tune my model?</summary>
+  <summary>How can I train my model?</summary>
   <br>
   <p>
-    Fine-tuning data is provided at https://github.com/Healthi-Labs/healthi-subnet/blob/main/healthi/base/data/trainset.parquet. We also encourage miners to obtain EHR data from their own sources for fine-tuning.
+    Our base <a href="https://huggingface.co/Healthi/disease_prediction_v1.0">model</a> is a small Transformer model equipped with a customized tokenizer for EHR data. We recommend all miners train their model based on our tokenizer. Training data is available at <a href="https://github.com/Healthi-Labs/healthi-subnet/blob/main/healthi/base/data/trainset.parquet">this link</a>. Miners are also encouraged to acquire EHR data from their own sources for fine-tuning.
   </p>
 </details>
 
-
+<details>
+  <summary>Validator minimum staking requirements</summary>
+  <br>
+  <p>
+    Validators need to stake at least 20,000 Tao on the mainnet or 10 Tao on the testnet to query our data API. Otherwise, validators can only acquire data locally for testing purposes. Data obtained locally carry significantly less weight than data from the API.
+  </p>
+</details>
