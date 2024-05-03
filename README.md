@@ -143,7 +143,7 @@ $ bash scripts/run_auto_updater.sh \
   <summary>Data source and how do we prevent data exploitation?</summary>
   <br>
   <p>
-Our data originates from authentic inpatient records, which are anonymized using Generative Adversarial Networks (GANs) to preserve the original data distributions while ensuring patient confidentiality. To prevent data exploitation and enhance security, our API continuously generates unique, synthetic EHR sequences for validators, protecting against replay attacks.
+Our data originates from authentic inpatient records, which are anonymized using Generative Adversarial Networks (GANs) to preserve the original data distributions while ensuring patient confidentiality. To prevent data exploitation and enhance security, our API continuously generates unique, synthetic electronic health record sequences for validators, protecting against replay attacks.
   </p>
 </details>
 
@@ -151,7 +151,7 @@ Our data originates from authentic inpatient records, which are anonymized using
   <summary>How can I train my model?</summary>
   <br>
   <p>
-    Our base <a href="https://huggingface.co/Healthi/disease_prediction_v1.0">model</a> is a small Transformer model equipped with a customized tokenizer for EHR data. We recommend all miners train their model based on our tokenizer. Training data is available at <a href="https://github.com/Healthi-Labs/healthi-subnet/blob/main/healthi/base/data/trainset.parquet">this link</a>. Miners are also encouraged to acquire EHR data from their own sources for fine-tuning.
+    Our base <a href="https://huggingface.co/Healthi/disease_prediction_v1.0">model</a> is a small Transformer model equipped with a customized tokenizer for electronic health record (EHR) data. We recommend miners train their model based on our tokenizer. Training data is available at <a href="https://github.com/Healthi-Labs/healthi-subnet/blob/main/healthi/base/data/trainset.parquet">this link</a>. Miners are also encouraged to use their own sourced EHR data for training.
   </p>
 </details>
 
