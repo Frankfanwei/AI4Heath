@@ -61,7 +61,7 @@ $ bash scripts/run_neuron.sh \
 --axon.port 12345 
 ```
 
-Run validator on testnet (if you run multiple validators, make sure the name is unique):
+Run validator on testnet (validator updates automatically):
 ```
 $ cd healthi-subnet
 $ source .venv/bin/activate
@@ -74,17 +74,6 @@ $ bash scripts/run_neuron.sh \
 --wallet.name {cold_wallet_name} \
 --wallet.hotkey {hot_wallet_name} \
 --subtensor.network test
-```
-
-Auto-updater: We only recommend validators to run the auto-updater code as this might overwrite the codes modified by miners:
-```
-$ cd healthi-subnet
-$ source .venv/bin/activate
-$ bash scripts/run_auto_updater.sh \
---update_interval 300 \
---branch main \
---pm2_instance_names healthi_validator \
---prepare_miners False
 ```
 
 <h1 id="FAQ">FAQ</h1>
