@@ -22,5 +22,5 @@ while true; do
     else
         echo "No updates found. Checking again in 10 minutes..."
     fi
-    sleep 10  # Check every 10 minutes
+    sleep 600  # Check every 10 minutes
 done
