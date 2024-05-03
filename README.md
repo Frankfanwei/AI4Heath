@@ -32,7 +32,6 @@ $ python3 -m venv .venv
 If you are not familiar with Bittensor, you should first perform the following activities:
 - [Generate a new coldkey](https://docs.bittensor.com/getting-started/wallets#step-1-generate-a-coldkey)
 - [Generate a new hotkey under your new coldkey](https://docs.bittensor.com/getting-started/wallets#step-2-generate-a-hotkey)
-- [Register your new hotkey on our subnet](https://docs.bittensor.com/subnets/register-and-participate)
 
 # Subnet register
 
